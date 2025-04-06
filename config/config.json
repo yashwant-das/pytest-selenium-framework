@@ -1,43 +1,36 @@
 {
     "browser": {
         "default": "chrome",
-        "chrome": {
-            "headless": false,
-            "implicit_wait": 10
-        },
-        "firefox": {
-            "headless": false,
-            "implicit_wait": 10
-        },
-        "edge": {
-            "headless": false,
-            "implicit_wait": 10
-        },
         "headless": true,
         "implicit_wait": 10,
         "page_load_timeout": 30,
-        "script_timeout": 30
+        "script_timeout": 30,
+        "chrome": {
+            "implicit_wait": 10
+        },
+        "firefox": {
+            "implicit_wait": 10
+        },
+        "edge": {
+            "implicit_wait": 10
+        }
     },
     "environment": {
         "dev": {
             "url": "https://www.selenium.dev",
-            "timeout": 10,
-            "headless": false
+            "timeout": 10
         },
         "qa": {
             "url": "https://www.selenium.qa",
-            "timeout": 10,
-            "headless": false
+            "timeout": 10
         },
         "staging": {
             "url": "https://www.selenium.staging",
-            "timeout": 10,
-            "headless": false
+            "timeout": 10
         },
         "prod": {
             "url": "https://www.selenium.com",
-            "timeout": 10,
-            "headless": false
+            "timeout": 10
         }
     },
     "reporting": {

@@ -45,14 +45,14 @@ def run_system_check():
 
 def run_tests(args):
     """Run the tests with the specified options"""
-    # Set headless mode in config if specified
-    if args.headless:
-        config = load_config()
-        config["browser"]["headless"] = True
-        save_config(config)
-
     # Build pytest command
     pytest_cmd = ["python", "-m", "pytest", "-v", "--html=reports/html/report.html", "--self-contained-html"]
+    
+    # Add headless flag if specified
+    if args.headless:
+        pytest_cmd.append("--headless")
+        logger.info("Running tests in headless mode")
+    
     if args.test_path:
         pytest_cmd.append(args.test_path)
 

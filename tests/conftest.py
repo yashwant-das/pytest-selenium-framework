@@ -18,6 +18,8 @@ logging.basicConfig(
 def pytest_addoption(parser):
     parser.addoption("--browser", action="store", default="chrome",
                      help="Browser to run tests: chrome or firefox")
+    parser.addoption("--headless", action="store_true", default=False,
+                     help="Run tests in headless mode")
 
 @pytest.fixture(scope="session")
 def config():
@@ -39,13 +41,18 @@ def config():
         }
 
 @pytest.fixture(scope="function")
-def driver(config):
+def driver(config, request):
     """Create and configure WebDriver"""
     browser = config["browser"]["default"]
     
+    # Check if --headless flag was passed
+    headless = False
+    if hasattr(request.config, 'option') and request.config.option.headless:
+        headless = True
+    
     if browser == "chrome":
         options = Options()
-        if config["browser"].get("headless", False):
+        if headless:
             options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
