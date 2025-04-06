@@ -7,7 +7,6 @@ import os
 import json
 import logging
 from utilities.screenshot_helper import ScreenshotHelper
-from utilities.email_reporter import EmailReporter
 
 # Configure logging
 logging.basicConfig(
@@ -19,8 +18,6 @@ logging.basicConfig(
 def pytest_addoption(parser):
     parser.addoption("--browser", action="store", default="chrome",
                      help="Browser to run tests: chrome or firefox")
-    parser.addoption("--email-config", action="store", default=None,
-                     help="Path to email configuration file")
 
 @pytest.fixture(scope="session")
 def config():
@@ -37,30 +34,6 @@ def config():
                 "chrome": {
                     "headless": False,
                     "implicit_wait": 10
-                }
-            },
-            "test_data": {
-                "selenium": {
-                    "navigation": {
-                        "home": "Home",
-                        "downloads": "Downloads",
-                        "documentation": "Documentation",
-                        "projects": "Projects",
-                        "blog": "Blog"
-                    },
-                    "downloads": {
-                        "java": "Java",
-                        "python": "Python",
-                        "javascript": "JavaScript",
-                        "ruby": "Ruby",
-                        "csharp": "C#",
-                        "php": "PHP"
-                    }
-                },
-                "search": {
-                    "valid_term": "Selenium WebDriver",
-                    "invalid_term": "xyz123nonexistent",
-                    "special_chars": "!@#$%^&*()"
                 }
             }
         }
@@ -119,24 +92,4 @@ def test_data(config):
         with open(test_data_path, 'r') as f:
             return json.load(f)
     except FileNotFoundError:
-        # Fallback to config test data if file doesn't exist
-        return config.get("test_data", {})
-
-def pytest_sessionfinish(session, exitstatus):
-    """
-    Called after all tests have been executed
-    """
-    # Collect test results
-    test_results = {
-        "passed": session.testscollected - session.testsfailed,
-        "failed": session.testsfailed,
-        "total": session.testscollected
-    }
-    
-    # Send email report
-    try:
-        email_config_path = session.config.getoption("--email-config")
-        email_reporter = EmailReporter(email_config_path)
-        email_reporter.send_report(test_results)
-    except Exception as e:
-        print(f"Failed to send email report: {e}") 
+        return {} 

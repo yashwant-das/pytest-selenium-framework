@@ -1,127 +1,104 @@
 #!/usr/bin/env python3
 import os
 import sys
-import logging
-import subprocess
 import argparse
+import subprocess
+import logging
+from datetime import datetime
+from utilities.system_check import SystemCheck
 
-def setup_logging():
-    """Setup logging configuration"""
-    # Create logs directory if it doesn't exist
-    os.makedirs('logs', exist_ok=True)
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+logger = logging.getLogger(__name__)
+
+def setup_directories():
+    """Create necessary directories if they don't exist"""
+    directories = [
+        'logs',
+        'reports',
+        'reports/html',
+        'reports/screenshots',
+        'reports/allure-results'
+    ]
     
-    # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler('logs/test_execution.log')
-        ]
-    )
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            logger.info(f"Created directory: {directory}")
 
 def run_system_check():
-    """Run system check before tests"""
-    logger = logging.getLogger(__name__)
+    """Run system check to verify environment"""
     logger.info("Running system check...")
-    
-    try:
-        result = subprocess.run(['python', 'run_system_check.py'], 
-                               capture_output=True, text=True)
-        
-        if result.returncode != 0:
-            logger.error("System check failed. Please fix the issues before running tests.")
-            logger.error(result.stdout)
-            logger.error(result.stderr)
-            return False
-        
+    system_check = SystemCheck()
+    if system_check.run():
         logger.info("System check passed successfully.")
         return True
-    except Exception as e:
-        logger.error(f"Error running system check: {str(e)}")
+    else:
+        logger.error("System check failed. Please fix the issues before running tests.")
         return False
 
-def run_tests(test_path=None, browser=None, headless=False):
-    """Run tests with specified parameters"""
-    logger = logging.getLogger(__name__)
-    
+def run_tests(args):
+    """Run the tests with the specified arguments"""
     # Build pytest command
-    cmd = ['python', '-m', 'pytest']
+    pytest_cmd = ["python", "-m", "pytest"]
     
     # Add test path if specified
-    if test_path:
-        cmd.append(test_path)
-    else:
-        cmd.append('tests')
+    if args.test_path:
+        pytest_cmd.append(args.test_path)
     
-    # Add browser option if specified
-    if browser:
-        cmd.extend(['--browser', browser])
-    
-    # Add headless option if specified
-    if headless:
-        cmd.extend(['--headless'])
-    
-    # Add verbose flag
-    cmd.append('-v')
+    # Add verbosity
+    pytest_cmd.append("-v")
     
     # Add HTML report
-    cmd.extend(['--html=reports/html/report.html', '--self-contained-html'])
+    pytest_cmd.extend(["--html=reports/html/report.html", "--self-contained-html"])
+    
+    # Add browser option if specified
+    if args.browser:
+        pytest_cmd.extend(["--browser", args.browser])
+    
+    # Add headless option if specified
+    if args.headless:
+        pytest_cmd.extend(["--headless"])
     
     # Log the command
-    logger.info(f"Running tests with command: {' '.join(cmd)}")
+    logger.info(f"Running tests with command: {' '.join(pytest_cmd)}")
     
     # Run the tests
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        
-        # Log the output
-        logger.info(result.stdout)
-        
-        if result.stderr:
-            logger.error(result.stderr)
-        
-        # Check the return code
-        if result.returncode != 0:
-            logger.error(f"Tests failed with return code: {result.returncode}")
-            return False
-        
+        result = subprocess.run(pytest_cmd, check=True)
         logger.info("Tests completed successfully.")
-        return True
-    except Exception as e:
-        logger.error(f"Error running tests: {str(e)}")
+        return result.returncode == 0
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Tests failed with return code: {e.returncode}")
         return False
 
 def main():
-    """Main function to run tests"""
+    """Main function to run the tests"""
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Run Selenium tests')
-    parser.add_argument('--test-path', help='Path to test file or directory')
-    parser.add_argument('--browser', choices=['chrome', 'firefox', 'edge'], 
-                        help='Browser to run tests')
-    parser.add_argument('--headless', action='store_true', 
-                        help='Run tests in headless mode')
-    parser.add_argument('--skip-system-check', action='store_true', 
-                        help='Skip system check before running tests')
+    parser = argparse.ArgumentParser(description="Run Selenium tests with pytest")
+    parser.add_argument("--test-path", help="Path to test file or directory")
+    parser.add_argument("--browser", choices=["chrome", "firefox", "edge"], help="Browser to use for tests")
+    parser.add_argument("--headless", action="store_true", help="Run tests in headless mode")
+    parser.add_argument("--skip-system-check", action="store_true", help="Skip system check")
     args = parser.parse_args()
     
-    # Setup logging
-    setup_logging()
-    logger = logging.getLogger(__name__)
+    # Setup directories
+    setup_directories()
     
-    # Run system check if not skipped
+    # Run system check unless skipped
     if not args.skip_system_check:
         if not run_system_check():
-            logger.error("Exiting due to system check failure.")
-            sys.exit(1)
+            return 1
     
     # Run tests
-    if not run_tests(args.test_path, args.browser, args.headless):
-        logger.error("Tests failed.")
-        sys.exit(1)
+    success = run_tests(args)
     
-    logger.info("All tests completed successfully.")
-    sys.exit(0)
+    return 0 if success else 1
 
 if __name__ == "__main__":
-    main() 
+    sys.exit(main()) 
