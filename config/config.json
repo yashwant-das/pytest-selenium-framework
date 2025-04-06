@@ -13,7 +13,7 @@
             "headless": false,
             "implicit_wait": 10
         },
-        "headless": false,
+        "headless": true,
         "implicit_wait": 10,
         "page_load_timeout": 30,
         "script_timeout": 30
@@ -60,4 +60,4 @@
         "script": 30,
         "implicit": 10
     }
-} 
+}

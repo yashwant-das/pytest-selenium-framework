@@ -6,6 +6,7 @@ import subprocess
 import logging
 from datetime import datetime
 from utilities.system_check import SystemCheck
+import json
 
 # Configure logging
 logging.basicConfig(
@@ -43,39 +44,35 @@ def run_system_check():
         return False
 
 def run_tests(args):
-    """Run the tests with the specified arguments"""
+    """Run the tests with the specified options"""
+    # Set headless mode in config if specified
+    if args.headless:
+        config = load_config()
+        config["browser"]["headless"] = True
+        save_config(config)
+
     # Build pytest command
-    pytest_cmd = ["python", "-m", "pytest"]
-    
-    # Add test path if specified
+    pytest_cmd = ["python", "-m", "pytest", "-v", "--html=reports/html/report.html", "--self-contained-html"]
     if args.test_path:
         pytest_cmd.append(args.test_path)
-    
-    # Add verbosity
-    pytest_cmd.append("-v")
-    
-    # Add HTML report
-    pytest_cmd.extend(["--html=reports/html/report.html", "--self-contained-html"])
-    
-    # Add browser option if specified
-    if args.browser:
-        pytest_cmd.extend(["--browser", args.browser])
-    
-    # Add headless option if specified
-    if args.headless:
-        pytest_cmd.extend(["--headless"])
-    
-    # Log the command
-    logger.info(f"Running tests with command: {' '.join(pytest_cmd)}")
-    
-    # Run the tests
+
+    # Run pytest
     try:
         result = subprocess.run(pytest_cmd, check=True)
-        logger.info("Tests completed successfully.")
         return result.returncode == 0
     except subprocess.CalledProcessError as e:
-        logger.error(f"Tests failed with return code: {e.returncode}")
+        logging.error(f"Tests failed with return code: {e.returncode}")
         return False
+
+def load_config():
+    """Load configuration from config.json"""
+    with open('config/config.json', 'r') as f:
+        return json.load(f)
+
+def save_config(config):
+    """Save configuration to config.json"""
+    with open('config/config.json', 'w') as f:
+        json.dump(config, f, indent=4)
 
 def main():
     """Main function to run the tests"""

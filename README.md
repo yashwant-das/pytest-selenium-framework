@@ -47,7 +47,7 @@ pytest-selenium-framework/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/pytest-selenium-framework.git
+   git clone https://github.com/yashwant-das/pytest-selenium-framework.git
    cd pytest-selenium-framework
    ```
 

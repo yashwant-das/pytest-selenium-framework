@@ -9,7 +9,7 @@ setup(
     packages=find_packages(),
     python_requires=">=3.8",
     install_requires=[
-        "selenium>=4.18.1",
+        "selenium>=4.31.0",
         "pytest>=8.0.2",
         "pytest-html>=4.1.1",
         "pytest-xdist>=3.5.0",

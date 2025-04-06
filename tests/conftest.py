@@ -42,11 +42,10 @@ def config():
 def driver(config):
     """Create and configure WebDriver"""
     browser = config["browser"]["default"]
-    browser_config = config["browser"][browser]
     
     if browser == "chrome":
         options = Options()
-        if browser_config.get("headless", False):
+        if config["browser"].get("headless", False):
             options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
@@ -57,7 +56,7 @@ def driver(config):
         raise ValueError(f"Unsupported browser: {browser}")
     
     # Set implicit wait
-    driver.implicitly_wait(browser_config.get("implicit_wait", 10))
+    driver.implicitly_wait(config["browser"].get("implicit_wait", 10))
     
     yield driver
     
