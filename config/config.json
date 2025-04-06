@@ -25,17 +25,17 @@
             "headless": false
         },
         "qa": {
-            "url": "https://www.selenium.dev",
+            "url": "https://www.selenium.qa",
             "timeout": 10,
             "headless": false
         },
         "staging": {
-            "url": "https://www.selenium.dev",
+            "url": "https://www.selenium.staging",
             "timeout": 10,
             "headless": false
         },
         "prod": {
-            "url": "https://www.selenium.dev",
+            "url": "https://www.selenium.com",
             "timeout": 10,
             "headless": false
         }

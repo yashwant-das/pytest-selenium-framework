@@ -39,6 +39,7 @@ pytest-selenium-framework/
 ├── run_system_check.py      # Script to run system checks
 ├── run_tests.py             # Main script to run tests
 ├── requirements.txt         # Project dependencies
+├── setup.py                 # Package setup script
 └── README.md                # Project documentation
 ```
 
@@ -208,4 +209,17 @@ After test execution, HTML reports are generated in the `reports/html` directory
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Setup.py
+
+The `setup.py` file is used to define metadata about the package and specify dependencies required for the package to run. It is essential for packaging Python projects, managing dependencies, and facilitating the installation and distribution of Python packages.
+
+### Purpose for End Users
+
+- **Easy Installation**: End users can easily install the package using pip. They simply need to run a command like `pip install selenium-python-framework` if the package is available on PyPI, or `pip install .` if they have downloaded the source code.
+- **Dependency Management**: The `setup.py` file automatically handles the installation of all required dependencies. End users don't need to manually install each dependency; pip will take care of this for them.
+- **Version Control**: The `setup.py` file specifies the version of the package, allowing users to know which version they are installing. This is useful for compatibility and troubleshooting.
+- **Metadata**: It provides metadata about the package, such as the author, description, and supported Python versions. This information helps users understand what the package does and who maintains it.
+- **Distribution**: If the package is distributed, `setup.py` is used to create distribution files that can be uploaded to PyPI. This makes it easy for users to find and install the package.
+- **Customization**: Advanced users can customize the installation process by modifying the `setup.py` file, although this is less common for typical end users. 

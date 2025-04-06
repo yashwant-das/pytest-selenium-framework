@@ -4,8 +4,8 @@ setup(
     name="selenium-python-framework",
     version="0.1.0",
     description="A robust Selenium test automation framework with Python",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="Yashwant Das",
+    author_email="yashworks@gmail.com",
     packages=find_packages(),
     python_requires=">=3.8",
     install_requires=[
@@ -20,7 +20,8 @@ setup(
         "pytest-timeout>=2.2.0",
         "pytest-ordering>=0.6",
         "requests>=2.31.0",
-        "colorama>=0.4.6"
+        "colorama>=0.4.6",
+        "setuptools>=65.5.1"
     ],
     classifiers=[
         "Development Status :: 4 - Beta",
