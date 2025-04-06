@@ -43,7 +43,8 @@ class BasePage:
         """Check if an element is visible"""
         try:
             self.logger.debug(f"Checking visibility of element: {by}={value}")
-            self.wait.until(
+            wait = WebDriverWait(self.driver, timeout)
+            wait.until(
                 EC.visibility_of_element_located((by, value))
             )
             return True
@@ -52,25 +53,26 @@ class BasePage:
             self.screenshot_helper.take_screenshot(f"element_not_visible_{value}")
             return False
 
-    def wait_for_element_visible(self, locator, timeout=10):
+    def wait_for_element_visible(self, by, value, timeout=10):
         """Wait for an element to be visible"""
         try:
-            self.logger.debug(f"Waiting for element to be visible: {locator}")
-            self.wait = WebDriverWait(self.driver, timeout)
-            element = self.wait.until(
-                EC.visibility_of_element_located(locator)
+            self.logger.debug(f"Waiting for element to be visible: {by}={value}")
+            wait = WebDriverWait(self.driver, timeout)
+            element = wait.until(
+                EC.visibility_of_element_located((by, value))
             )
             return element
         except TimeoutException:
-            self.logger.error(f"Element not visible after {timeout} seconds: {locator}")
-            self.screenshot_helper.take_screenshot(f"element_not_visible_{locator[1]}")
+            self.logger.error(f"Element not visible after {timeout} seconds: {by}={value}")
+            self.screenshot_helper.take_screenshot(f"element_not_visible_{value}")
             raise
 
     def is_element_clickable(self, by, value, timeout=10):
         """Check if an element is clickable"""
         try:
             self.logger.debug(f"Checking clickability of element: {by}={value}")
-            self.wait.until(
+            wait = WebDriverWait(self.driver, timeout)
+            wait.until(
                 EC.element_to_be_clickable((by, value))
             )
             return True
@@ -78,17 +80,17 @@ class BasePage:
             self.logger.debug(f"Element not clickable: {by}={value}")
             return False
 
-    def click(self, locator):
+    def click(self, by, value):
         """Click on an element"""
         try:
-            self.logger.debug(f"Clicking element: {locator}")
+            self.logger.debug(f"Clicking element: {by}={value}")
             element = self.wait.until(
-                EC.element_to_be_clickable(locator)
+                EC.element_to_be_clickable((by, value))
             )
             element.click()
         except Exception as e:
-            self.logger.error(f"Failed to click element: {locator}")
-            self.screenshot_helper.take_screenshot(f"click_failed_{locator[1]}")
+            self.logger.error(f"Failed to click element: {by}={value}")
+            self.screenshot_helper.take_screenshot(f"click_failed_{value}")
             raise
 
     def get_text(self, by, value):
@@ -104,23 +106,24 @@ class BasePage:
             self.screenshot_helper.take_screenshot(f"get_text_failed_{value}")
             raise
 
-    def send_keys(self, locator, text):
+    def send_keys(self, by, value, text):
         """Send keys to an element"""
         try:
-            self.logger.debug(f"Sending keys to element: {locator}")
-            element = self.find_element(*locator)
+            self.logger.debug(f"Sending keys to element: {by}={value}")
+            element = self.find_element(by, value)
             element.clear()
             element.send_keys(text)
         except Exception as e:
-            self.logger.error(f"Failed to send keys to element: {locator}")
-            self.screenshot_helper.take_screenshot(f"send_keys_failed_{locator[1]}")
+            self.logger.error(f"Failed to send keys to element: {by}={value}")
+            self.screenshot_helper.take_screenshot(f"send_keys_failed_{value}")
             raise
 
     def wait_for_url_contains(self, url_substring, timeout=10):
         """Wait for URL to contain specific substring"""
         try:
             self.logger.debug(f"Waiting for URL to contain: {url_substring}")
-            self.wait.until(
+            wait = WebDriverWait(self.driver, timeout)
+            wait.until(
                 lambda driver: url_substring in driver.current_url
             )
             return True
@@ -146,15 +149,16 @@ class BasePage:
             self.logger.error(f"Failed to take screenshot: {str(e)}")
             raise
 
-    def wait_for_element_to_disappear(self, locator, timeout=10):
+    def wait_for_element_to_disappear(self, by, value, timeout=10):
         """Wait for element to disappear with explicit wait and logging"""
         try:
-            self.logger.debug(f"Waiting for element to disappear: {locator}")
-            WebDriverWait(self.driver, timeout).until_not(
-                EC.presence_of_element_located(locator)
+            self.logger.debug(f"Waiting for element to disappear: {by}={value}")
+            wait = WebDriverWait(self.driver, timeout)
+            wait.until_not(
+                EC.presence_of_element_located((by, value))
             )
             return True
         except TimeoutException:
-            self.logger.error(f"Element did not disappear: {locator}")
-            self.screenshot_helper.take_screenshot(f"element_did_not_disappear_{locator[1]}")
+            self.logger.error(f"Element did not disappear: {by}={value}")
+            self.screenshot_helper.take_screenshot(f"element_did_not_disappear_{value}")
             raise 

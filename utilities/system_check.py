@@ -85,21 +85,24 @@ class SystemCheck:
     
     def check_browser_installation(self):
         """Check if required browsers are installed"""
-        browsers = {
-            "chrome": self._check_chrome,
-            "firefox": self._check_firefox,
-            "edge": self._check_edge
-        }
+        self.logger.info("\n==================================================")
+        self.logger.info("🌐 Checking Browser Installation")
+        self.logger.info("==================================================")
         
-        results = {}
-        for browser, check_func in browsers.items():
-            try:
-                results[browser] = check_func()
-            except Exception as e:
-                self.logger.error(f"{self.STATUS_EMOJIS['fail']} Error checking {browser}: {str(e)}")
-                results[browser] = False
+        # Check Chrome
+        chrome_status = self._check_chrome()
         
-        return results
+        # Check Firefox
+        firefox_status = self._check_firefox()
+        
+        # Check Edge only on Windows
+        edge_status = True
+        if platform.system() == "Windows":
+            edge_status = self._check_edge()
+        else:
+            self.logger.info("⚠️ Edge browser check skipped - not supported on this OS")
+        
+        return chrome_status and firefox_status and edge_status
     
     def _check_chrome(self):
         """Check Chrome installation and ChromeDriver"""
@@ -247,57 +250,64 @@ class SystemCheck:
     
     def run_all_checks(self):
         """Run all system checks"""
-        self.logger.info("\n" + "="*50)
+        self.logger.info("\n==================================================")
         self.logger.info("🚀 Starting System Check")
-        self.logger.info("="*50 + "\n")
+        self.logger.info("==================================================")
         
-        checks = {
-            "Python Version": self.check_python_version(),
-            "Required Packages": self.check_required_packages(),
-            "Directory Structure": self.check_directory_structure(),
-            "Configuration Files": self.check_configuration_files()
-        }
+        # Check Python version
+        python_version_ok = self.check_python_version()
         
-        browser_checks = self.check_browser_installation()
-        checks.update({f"Browser - {browser.capitalize()}": status 
-                      for browser, status in browser_checks.items()})
+        # Check required packages
+        packages_ok = self.check_required_packages()
         
-        # Log system information
-        self.logger.info("\n" + "="*50)
+        # Check browser installation
+        browsers_ok = self.check_browser_installation()
+        
+        # Check directory structure
+        directories_ok = self.check_directory_structure()
+        
+        # Check configuration files
+        config_ok = self.check_configuration_files()
+        
+        # Print system information
+        self.logger.info("\n==================================================")
         self.logger.info("💻 System Information")
-        self.logger.info("="*50)
-        
-        info_emojis = {
-            "os": self.STATUS_EMOJIS["os"],
-            "os_version": self.STATUS_EMOJIS["version"],
-            "python_version": self.STATUS_EMOJIS["python"],
-            "architecture": self.STATUS_EMOJIS["arch"]
-        }
-        
+        self.logger.info("==================================================")
         for key, value in self.system_info.items():
-            self.logger.info(f"{info_emojis.get(key, self.STATUS_EMOJIS['info'])} {key}: {value}")
+            emoji = self.STATUS_EMOJIS.get(key, "ℹ️")
+            self.logger.info(f"{emoji} {key}: {value}")
         
-        # Log check results
-        self.logger.info("\n" + "="*50)
+        # Print check results
+        self.logger.info("\n==================================================")
         self.logger.info("🎯 Check Results")
-        self.logger.info("="*50)
+        self.logger.info("==================================================")
+        
+        results = {
+            "Python Version": python_version_ok,
+            "Required Packages": packages_ok,
+            "Directory Structure": directories_ok,
+            "Configuration Files": config_ok,
+            "Browser - Chrome": browsers_ok,
+            "Browser - Firefox": browsers_ok,
+            "Browser - Edge": browsers_ok
+        }
         
         all_passed = True
-        for check, passed in checks.items():
-            status = "PASSED" if passed else "FAILED"
-            emoji = self.STATUS_EMOJIS["pass"] if passed else self.STATUS_EMOJIS["fail"]
-            self.logger.info(f"{emoji} {check}: {status}")
-            if not passed:
+        for check, status in results.items():
+            emoji = self.STATUS_EMOJIS["pass"] if status else self.STATUS_EMOJIS["fail"]
+            self.logger.info(f"{emoji} {check}: {'PASSED' if status else 'FAILED'}")
+            if not status:
                 all_passed = False
         
-        self.logger.info("\n" + "="*50)
+        # Print final result
+        self.logger.info("\n==================================================")
         if all_passed:
-            self.logger.info("🎉 All checks passed! System is ready for automation!")
+            self.logger.info("✅ All checks passed. The system is ready for automation.")
         else:
-            self.logger.error("⚠️  Some checks failed. Please fix the issues before running tests.")
-        self.logger.info("="*50 + "\n")
+            self.logger.info("⚠️  Some checks failed. Please fix the issues before running tests.")
+        self.logger.info("==================================================")
         
-        return all_passed 
+        return all_passed
 
 if __name__ == "__main__":
     system_check = SystemCheck()

@@ -66,11 +66,11 @@
     "selenium": {
         "navigation": {
             "about": "About",
-            "blog": "Blog",
-            "documentation": "Documentation",
             "downloads": "Downloads",
+            "documentation": "Documentation",
             "projects": "Projects",
-            "support": "Support"
+            "support": "Support",
+            "blog": "Blog"
         },
         "components": {
             "webdriver": "Selenium WebDriver",

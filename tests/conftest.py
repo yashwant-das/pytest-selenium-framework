@@ -1,10 +1,20 @@
 import pytest
-from utilities.driver_factory import DriverFactory
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+import os
+import json
+import logging
 from utilities.screenshot_helper import ScreenshotHelper
 from utilities.email_reporter import EmailReporter
-import json
-import os
-from datetime import datetime
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 def pytest_addoption(parser):
     parser.addoption("--browser", action="store", default="chrome",
@@ -14,16 +24,71 @@ def pytest_addoption(parser):
 
 @pytest.fixture(scope="session")
 def config():
-    with open(os.path.join(os.path.dirname(__file__), "../config/config.json")) as config_file:
-        config = json.load(config_file)
-    return config
+    """Load test configuration"""
+    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config", "config.json")
+    try:
+        with open(config_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # Default configuration if file doesn't exist
+        return {
+            "browser": {
+                "default": "chrome",
+                "chrome": {
+                    "headless": False,
+                    "implicit_wait": 10
+                }
+            },
+            "test_data": {
+                "selenium": {
+                    "navigation": {
+                        "home": "Home",
+                        "downloads": "Downloads",
+                        "documentation": "Documentation",
+                        "projects": "Projects",
+                        "blog": "Blog"
+                    },
+                    "downloads": {
+                        "java": "Java",
+                        "python": "Python",
+                        "javascript": "JavaScript",
+                        "ruby": "Ruby",
+                        "csharp": "C#",
+                        "php": "PHP"
+                    }
+                },
+                "search": {
+                    "valid_term": "Selenium WebDriver",
+                    "invalid_term": "xyz123nonexistent",
+                    "special_chars": "!@#$%^&*()"
+                }
+            }
+        }
 
 @pytest.fixture(scope="function")
-def driver(request):
-    browser = request.config.getoption("--browser")
-    driver = DriverFactory.get_driver(browser)
-    driver.maximize_window()
+def driver(config):
+    """Create and configure WebDriver"""
+    browser = config["browser"]["default"]
+    browser_config = config["browser"][browser]
+    
+    if browser == "chrome":
+        options = Options()
+        if browser_config.get("headless", False):
+            options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=options)
+    else:
+        raise ValueError(f"Unsupported browser: {browser}")
+    
+    # Set implicit wait
+    driver.implicitly_wait(browser_config.get("implicit_wait", 10))
+    
     yield driver
+    
+    # Cleanup
     driver.quit()
 
 @pytest.fixture(scope="function")
@@ -47,10 +112,15 @@ def pytest_runtest_makereport(item, call):
             print(f"Failed to take screenshot: {e}")
 
 @pytest.fixture(scope="session")
-def test_data():
-    with open(os.path.join(os.path.dirname(__file__), "../test_data/test_data.json")) as data_file:
-        test_data = json.load(data_file)
-    return test_data
+def test_data(config):
+    """Load test data"""
+    test_data_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "test_data", "test_data.json")
+    try:
+        with open(test_data_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        # Fallback to config test data if file doesn't exist
+        return config.get("test_data", {})
 
 def pytest_sessionfinish(session, exitstatus):
     """

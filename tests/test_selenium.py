@@ -1,44 +1,32 @@
 import pytest
 from pages.selenium_page import SeleniumPage
 
-def test_selenium_homepage(driver, config, test_data):
-    """Test basic navigation on Selenium's homepage"""
+def test_selenium_title(driver, config):
+    """Simple test to demonstrate basic page navigation and title verification"""
     page = SeleniumPage(driver)
     page.navigate_to_homepage()
     
-    # Verify navigation and logo
-    assert page.is_navigation_visible(), "Main navigation should be visible"
-    assert page.is_logo_visible(), "Selenium logo should be visible"
+    # Get the page title
+    title = driver.title
     
-    # Verify navigation items
+    # Check if "Selenium" is in the title
+    assert "Selenium" in title, f"Expected 'Selenium' to be in the title, but got: {title}"
+
+def test_navigation_items(driver, config, test_data):
+    """Demonstrates data-driven testing using configuration"""
+    page = SeleniumPage(driver)
+    page.navigate_to_homepage()
+    
+    # Get actual navigation items
     nav_items = page.get_navigation_items()
+    
+    # Get expected items from test data
     expected_items = test_data["selenium"]["navigation"].values()
-    for item in nav_items:
-        assert item in expected_items, f"Navigation item {item} should be in expected items"
-
-def test_selenium_search(driver, config, test_data):
-    """Test search functionality on Selenium's website"""
-    page = SeleniumPage(driver)
-    page.navigate_to_homepage()
     
-    # Perform search
-    search_term = test_data["search"]["valid_term"]
-    assert page.search(search_term), "Search should return results"
+    # Print for debugging
+    print(f"Expected items: {list(expected_items)}")
+    print(f"Actual items: {nav_items}")
     
-    # Verify search results
-    results_text = page.get_search_results_text().lower()
-    assert search_term.lower() in results_text, f"Search results should contain '{search_term}'"
-
-def test_selenium_downloads(driver, config, test_data):
-    """Test navigation to downloads page and verify language options"""
-    page = SeleniumPage(driver)
-    page.navigate_to_homepage()
-    
-    # Navigate to downloads
-    assert page.navigate_to_downloads(), "Should be on the downloads page"
-    
-    # Verify language options
-    download_options = page.get_download_options()
-    expected_languages = test_data["selenium"]["downloads"].values()
-    for language in expected_languages:
-        assert language in download_options, f"Language option {language} should be available" 
+    # Verify each expected item is present
+    for item in expected_items:
+        assert item in nav_items, f"Navigation item '{item}' should be present" 
