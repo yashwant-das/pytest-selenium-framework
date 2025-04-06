@@ -1,0 +1,29 @@
+{
+    "default": {
+        "url": "https://www.example.com",
+        "username": "test_user",
+        "password": "test_password"
+    },
+    "environments": {
+        "dev": {
+            "url": "https://dev.example.com",
+            "username": "dev_user",
+            "password": "dev_password"
+        },
+        "qa": {
+            "url": "https://qa.example.com",
+            "username": "qa_user",
+            "password": "qa_password"
+        },
+        "staging": {
+            "url": "https://staging.example.com",
+            "username": "staging_user",
+            "password": "staging_password"
+        },
+        "prod": {
+            "url": "https://www.example.com",
+            "username": "prod_user",
+            "password": "prod_password"
+        }
+    }
+} 

@@ -58,6 +58,24 @@ edgedriver.log
 *.log
 webdriver.log
 selenium-debug.log
+drivers/
+
+# Edge driver specific
+msedgedriver*
+edge-driver*
+.edgedriver*
+.wdm/drivers/edgedriver/
+.wdm/drivers/edge/
+.wdm/drivers/microsoft-edge/
+.wdm/drivers/msedge/
+
+# Edge browser specific files
+**/credits.html
+**/EULA.html
+**/LICENSE.txt
+**/ThirdPartyNotices.txt
+**/msedge_*.html
+**/msedge_*.txt
 
 # Test reports and screenshots
 reports/

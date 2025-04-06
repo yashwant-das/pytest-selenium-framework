@@ -18,7 +18,8 @@ A robust and maintainable test automation framework built with Python, Selenium,
 ```
 pytest-selenium-framework/
 ├── config/                  # Configuration files
-│   └── config.json          # Main configuration file
+│   └── config.json          # Browser and technical settings
+├── drivers/                 # Browser driver files
 ├── logs/                    # Log files
 │   ├── system_check.log     # System check logs
 │   └── test_execution.log   # Test execution logs
@@ -28,7 +29,8 @@ pytest-selenium-framework/
 ├── reports/                 # Test reports
 │   ├── html/                # HTML reports
 │   └── screenshots/         # Failure screenshots
-├── test_data/               # Test data files
+├── test_data/               # Test data and environment config files
+│   ├── default.json         # Environment-specific settings
 │   └── test_data.json       # Test data for data-driven tests
 ├── tests/                   # Test files
 │   ├── conftest.py          # Pytest configuration and fixtures
@@ -36,10 +38,13 @@ pytest-selenium-framework/
 ├── utilities/               # Utility classes
 │   ├── screenshot_helper.py # Screenshot capture utility
 │   └── system_check.py      # System environment check utility
+├── .venv/                   # Python virtual environment
 ├── run_system_check.py      # Script to run system checks
 ├── run_tests.py             # Main script to run tests
+├── test_all_features.sh     # Shell script for running all tests
 ├── requirements.txt         # Project dependencies
 ├── setup.py                 # Package setup script
+├── pytest.ini              # Pytest configuration
 └── README.md                # Project documentation
 ```
 
@@ -106,6 +111,11 @@ Run tests in headless mode:
 python run_tests.py --headless
 ```
 
+Run tests in Edge browser:
+```bash
+python run_tests.py --browser edge
+```
+
 Skip system check:
 ```bash
 python run_tests.py --skip-system-check
@@ -145,14 +155,48 @@ class SeleniumPage(BasePage):
 
 ## Configuration
 
-The framework uses a JSON configuration file (`config/config.json`) for:
+The framework uses a well-organized configuration structure split across multiple files for better maintainability:
 
-- Browser settings
-- Test data
-- URLs
-- Timeouts
+### 1. Environment Configuration (`test_data/default.json`)
 
-Example:
+This file manages environment-specific settings and credentials. It supports multiple environments with their own configurations:
+
+```json
+{
+    "default": {
+        "url": "https://www.example.com",
+        "username": "test_user",
+        "password": "test_password"
+    },
+    "environments": {
+        "dev": {
+            "url": "https://dev.example.com",
+            "username": "dev_user",
+            "password": "dev_password"
+        },
+        "qa": {
+            "url": "https://qa.example.com",
+            "username": "qa_user",
+            "password": "qa_password"
+        },
+        "staging": {
+            "url": "https://staging.example.com",
+            "username": "staging_user",
+            "password": "staging_password"
+        },
+        "prod": {
+            "url": "https://www.example.com",
+            "username": "prod_user",
+            "password": "prod_password"
+        }
+    }
+}
+```
+
+### 2. Browser Configuration (`config/config.json`)
+
+This file contains browser-specific settings and timeouts that remain constant across environments:
+
 ```json
 {
   "browser": {
@@ -160,15 +204,51 @@ Example:
     "headless": false,
     "implicit_wait": 10
   },
-  "urls": {
-    "selenium": "https://www.selenium.dev"
-  },
   "timeouts": {
     "page_load": 30,
     "element_wait": 10
   }
 }
 ```
+
+### 3. Test Data (`test_data/test_data.json`)
+
+This file contains test-specific data used in data-driven tests:
+
+```json
+{
+  "selenium": {
+    "title": "Selenium",
+    "navigation_items": ["Home", "About", "Documentation", "Support", "Blog"]
+  }
+}
+```
+
+### Configuration Management
+
+The framework's configuration is organized into three main categories:
+
+1. **Environment Settings** (`test_data/default.json`)
+   - Environment-specific URLs
+   - User credentials
+   - Other environment variables
+
+2. **Technical Settings** (`config/config.json`)
+   - Browser configuration
+   - Timeout values
+   - Other technical parameters
+
+3. **Test Data** (`test_data/test_data.json`)
+   - Test-specific data
+   - Expected values
+   - Test scenarios
+
+This separation provides several benefits:
+- Clear organization of different types of configuration
+- Easy environment switching
+- Simplified maintenance
+- Better security for sensitive data
+- Improved collaboration among team members
 
 ## Test Data
 

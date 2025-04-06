@@ -1,21 +1,25 @@
 {
     "browser": {
         "default": "chrome",
-        "headless": true,
+        "headless": false,
         "implicit_wait": 10,
         "page_load_timeout": 30,
         "script_timeout": 30,
         "chrome": {
-            "implicit_wait": 10
+            "implicit_wait": 10,
+            "arguments": ["--no-sandbox", "--disable-dev-shm-usage"]
         },
         "firefox": {
-            "implicit_wait": 10
+            "implicit_wait": 10,
+            "arguments": []
         },
         "edge": {
-            "implicit_wait": 10
+            "implicit_wait": 10,
+            "arguments": []
         }
     },
     "environment": {
+        "default": "dev",
         "dev": {
             "url": "https://www.selenium.dev",
             "timeout": 10
