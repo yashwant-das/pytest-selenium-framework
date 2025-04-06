@@ -1,0 +1,14 @@
+{
+    "enabled": true,
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "sender_email": "your-email@gmail.com",
+    "sender_password": "your-app-specific-password",
+    "recipients": ["recipient1@example.com", "recipient2@example.com"],
+    "cc": ["cc1@example.com"],
+    "subject_template": "Test Execution Report - {date}",
+    "body_template": "Hello,\n\nTest execution completed with the following results:\n\nTotal Tests: {total}\nPassed: {passed}\nFailed: {failed}\nSkipped: {skipped}\n\nPlease find the attached report for detailed results.\n\nBest regards,\nTest Automation Team",
+    "attach_html_report": true,
+    "attach_screenshots": true,
+    "send_only_on_failure": false
+} 

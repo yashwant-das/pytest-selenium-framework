@@ -1,0 +1,72 @@
+{
+    "browser": {
+        "default": "chrome",
+        "chrome": {
+            "headless": false,
+            "implicit_wait": 10
+        },
+        "firefox": {
+            "headless": false,
+            "implicit_wait": 10
+        },
+        "edge": {
+            "headless": false,
+            "implicit_wait": 10
+        },
+        "headless": false,
+        "implicit_wait": 10,
+        "page_load_timeout": 30,
+        "script_timeout": 30
+    },
+    "environment": {
+        "dev": {
+            "url": "https://www.selenium.dev",
+            "timeout": 10,
+            "headless": false
+        },
+        "qa": {
+            "url": "https://www.selenium.dev",
+            "timeout": 10,
+            "headless": false
+        },
+        "staging": {
+            "url": "https://www.selenium.dev",
+            "timeout": 10,
+            "headless": false
+        },
+        "prod": {
+            "url": "https://www.selenium.dev",
+            "timeout": 10,
+            "headless": false
+        }
+    },
+    "test_data": {
+        "path": "test_data",
+        "default_file": "test_data.json"
+    },
+    "reporting": {
+        "screenshots": true,
+        "logs": true,
+        "html_report": true,
+        "allure_report": true,
+        "screenshot_on_failure": true,
+        "screenshot_dir": "reports/screenshots",
+        "html_report_dir": "reports/html",
+        "allure_results_dir": "reports/allure-results"
+    },
+    "retry": {
+        "max_retries": 2,
+        "delay": 1
+    },
+    "timeouts": {
+        "element": 10,
+        "page_load": 30,
+        "script": 30,
+        "implicit": 10
+    },
+    "github": {
+        "url": "https://github.com",
+        "login_url": "https://github.com/login",
+        "timeout": 10
+    }
+} 

@@ -51,29 +51,88 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
+# Selenium specific
+geckodriver.log
+chromedriver.log
+edgedriver.log
 *.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+webdriver.log
+selenium-debug.log
 
-# Flask stuff:
-instance/
-.webassets-cache
+# Test reports and screenshots
+reports/
+screenshots/
+allure-results/
+test-output/
+test-results/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
 
-# Scrapy stuff:
-.scrapy
+# Browser specific
+chrome-user-data/
+firefox-user-data/
+edge-user-data/
+*.crx
+*.pem
+*.zip
+*.tar.gz
 
-# Sphinx documentation
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Environment specific
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# Log files
+*.log
+logs/
+log/
+
+# Test data backups
+*.bak
+*.backup
+*_backup
+*_bak
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Documentation
 docs/_build/
-
-# PyBuilder
-.pybuilder/
-target/
+site/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -126,15 +185,6 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
 # Spyder project settings
 .spyderproject
