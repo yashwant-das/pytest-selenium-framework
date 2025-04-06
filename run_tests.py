@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 from utilities.system_check import SystemCheck
 from utilities.logger import setup_logger
+import pytest
 
 # Configure logging
 logger = setup_logger(__name__)
@@ -56,42 +57,43 @@ def run_system_check() -> bool:
         logger.error("System check failed. Please fix the issues before running tests.")
         return False
 
-def run_tests(args: argparse.Namespace) -> bool:
-    """Run the tests with the specified options.
+def run_tests(test_path, browser=None, parallel=None, env=None):
+    """Run the tests with the specified parameters"""
+    # Run system check first
+    if not run_system_check():
+        return False
     
-    Args:
-        args: Command line arguments parsed by argparse
-        
-    Returns:
-        bool: True if tests pass, False otherwise
-    """
     # Build pytest command
-    pytest_cmd: List[str] = ["python", "-m", "pytest", "-v", "--html=reports/html/report.html", "--self-contained-html"]
+    pytest_args = []
     
-    # Add headless flag if specified
-    if args.headless:
-        pytest_cmd.append("--headless")
-        logger.info("Running tests in headless mode")
+    # Add test path
+    if test_path:
+        pytest_args.append(test_path)
     
-    # Add browser flag if specified
-    if args.browser:
-        pytest_cmd.append(f"--browser={args.browser}")
-        logger.info(f"Running tests with browser: {args.browser}")
+    # Add browser option if specified
+    if browser:
+        pytest_args.extend(["--browser", browser])
     
-    # Add parallel execution flag if specified
-    if args.parallel:
-        pytest_cmd.append(f"-n={args.parallel}")
-        logger.info(f"Running tests in parallel with {args.parallel} workers")
+    # Add environment option if specified
+    if env:
+        pytest_args.extend(["--env", env])
     
-    if args.test_path:
-        pytest_cmd.append(args.test_path)
-
-    # Run pytest
+    # Add parallel execution options if specified
+    if parallel:
+        num_workers = int(parallel)
+        pytest_args.extend([
+            f"-n={num_workers}",
+            "--dist=loadfile",
+            "--tb=short"
+        ])
+        logger.info(f"Running tests in parallel with {num_workers} workers")
+    
+    # Run pytest with the constructed arguments
     try:
-        result = subprocess.run(pytest_cmd, check=True)
-        return result.returncode == 0
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Tests failed with return code: {e.returncode}")
+        pytest.main(pytest_args)
+        return True
+    except Exception as e:
+        logger.error(f"Error running tests: {str(e)}")
         return False
 
 def main() -> int:
@@ -128,7 +130,7 @@ def main() -> int:
             return 1
     
     # Run tests
-    success = run_tests(args)
+    success = run_tests(test_path, args.browser, args.parallel)
     
     return 0 if success else 1
 

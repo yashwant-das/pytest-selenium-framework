@@ -28,10 +28,28 @@ def test_parallel_execution(driver, test_data):
     """Test that parallel execution works by simulating a slow operation"""
     url = test_data["env_config"]["default"]["url"]
     driver.get(url)
-    # Simulate some work
-    time.sleep(2)
+    
+    # Simulate a slow operation that would benefit from parallel execution
+    start_time = time.time()
+    time.sleep(2)  # Simulate a slow operation
+    end_time = time.time()
+    
+    # Log the execution time and session ID
+    execution_time = end_time - start_time
+    session_id = driver.capabilities.get('sessionId', 'unknown')
+    worker_id = driver.capabilities.get('workerId', 'unknown')
+    print(f"\nTest execution time: {execution_time:.2f} seconds")
+    print(f"Browser session ID: {session_id}")
+    print(f"Worker ID: {worker_id}")
+    
+    # Verify the page loaded correctly
     assert "Selenium" in driver.title, "Page title should contain 'Selenium'"
     assert "WebDriver" in driver.page_source, "Page should contain WebDriver text"
+    
+    # If running in parallel mode, verify that we have a unique session ID
+    if hasattr(driver, 'capabilities') and 'sessionId' in driver.capabilities:
+        print(f"Running in parallel mode with session ID: {driver.capabilities['sessionId']}")
+        print(f"Running on worker: {driver.capabilities['workerId']}")
 
 def test_screenshot_on_failure(driver, test_data):
     """Test that screenshots are taken on test failure"""

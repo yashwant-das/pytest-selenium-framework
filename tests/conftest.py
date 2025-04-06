@@ -9,6 +9,8 @@ import platform
 from utilities.screenshot_helper import ScreenshotHelper
 from utilities.logger import setup_logger
 from datetime import datetime
+import subprocess
+import uuid
 
 # Configure logging
 logger = setup_logger(__name__)
@@ -39,113 +41,94 @@ def config():
         }
 
 @pytest.fixture(scope="function")
-def driver(config, request):
-    """Create and configure WebDriver"""
-    # Get browser from command line or config
-    browser = request.config.getoption("--browser") or config["browser"]["default"]
-    
-    # Check if --headless flag was passed
-    headless = False
-    if hasattr(request.config, 'option') and request.config.option.headless:
-        headless = True
+def driver(request, test_data):
+    """Fixture to create and manage WebDriver instances"""
+    browser = request.config.getoption("--browser", default="chrome")
+    headless = request.config.getoption("--headless", default=False)
     
     # Get browser-specific configuration
-    browser_config = config["browser"].get(browser, {})
+    browser_config = test_data["browser_config"].get(browser, {})
     
+    # Create options based on browser type
     if browser == "chrome":
-        options = Options()
+        options = webdriver.ChromeOptions()
         if headless:
             options.add_argument("--headless")
-        
-        # Add browser-specific arguments
         for arg in browser_config.get("arguments", []):
             options.add_argument(arg)
-        
+        for pref in browser_config.get("preferences", {}).items():
+            options.add_experimental_option("prefs", {pref[0]: pref[1]})
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
+    
     elif browser == "firefox":
-        from selenium.webdriver.firefox.service import Service as FirefoxService
-        from selenium.webdriver.firefox.options import Options as FirefoxOptions
-        from webdriver_manager.firefox import GeckoDriverManager
-        
-        options = FirefoxOptions()
+        options = webdriver.FirefoxOptions()
         if headless:
             options.add_argument("--headless")
-        
-        # Add browser-specific arguments
         for arg in browser_config.get("arguments", []):
             options.add_argument(arg)
+        for pref in browser_config.get("preferences", {}).items():
+            options.set_preference(pref[0], pref[1])
         
-        service = FirefoxService(GeckoDriverManager().install())
-        driver = webdriver.Firefox(service=service, options=options)
-    elif browser == "edge":
-        from selenium.webdriver.edge.service import Service as EdgeService
-        from selenium.webdriver.edge.options import Options as EdgeOptions
-        from webdriver_manager.microsoft import EdgeChromiumDriverManager
-        
-        options = EdgeOptions()
-        if headless:
-            options.add_argument("--headless")
-        
-        # Add browser-specific arguments
-        for arg in browser_config.get("arguments", []):
-            options.add_argument(arg)
-        
-        # Check if running on Apple Silicon
-        is_apple_silicon = platform.system() == "Darwin" and platform.machine() == "arm64"
-        
-        # Use the appropriate driver version for Apple Silicon
-        if is_apple_silicon:
-            # For Apple Silicon, we need to use a different approach
-            # Instead of trying to download the driver, we'll use the Edge browser directly
-            # This is a workaround for the CPU architecture issue
+        # Try to use local geckodriver first
+        try:
+            # Check if geckodriver is in PATH
+            subprocess.run(["geckodriver", "--version"], capture_output=True, check=True)
+            from selenium.webdriver.firefox.service import Service as FirefoxService
+            service = FirefoxService()
+            driver = webdriver.Firefox(service=service, options=options)
+        except (subprocess.SubprocessError, FileNotFoundError):
+            # Fall back to webdriver-manager if local geckodriver is not available
             try:
-                # Try to use the Edge browser directly
-                driver = webdriver.Edge(options=options)
-                logger.info("Successfully initialized Edge browser on Apple Silicon")
-            except webdriver.WebDriverException as e:
-                logger.error(f"WebDriver error when using Edge browser directly: {e}")
-                logger.info("Falling back to Chrome browser...")
-                # Fall back to Chrome browser
-                options = Options()
-                if headless:
-                    options.add_argument("--headless")
-                
-                # Add browser-specific arguments
-                for arg in browser_config.get("arguments", []):
-                    options.add_argument(arg)
-                
-                service = Service(ChromeDriverManager().install())
-                driver = webdriver.Chrome(service=service, options=options)
-                logger.info("Successfully initialized Chrome browser as fallback")
+                from selenium.webdriver.firefox.service import Service as FirefoxService
+                from webdriver_manager.firefox import GeckoDriverManager
+                service = FirefoxService(GeckoDriverManager().install())
+                driver = webdriver.Firefox(service=service, options=options)
             except Exception as e:
-                logger.error(f"Unexpected error when using Edge browser directly: {e}")
-                logger.info("Falling back to Chrome browser...")
-                # Fall back to Chrome browser
-                options = Options()
-                if headless:
-                    options.add_argument("--headless")
-                
-                # Add browser-specific arguments
-                for arg in browser_config.get("arguments", []):
-                    options.add_argument(arg)
-                
-                service = Service(ChromeDriverManager().install())
-                driver = webdriver.Chrome(service=service, options=options)
-                logger.info("Successfully initialized Chrome browser as fallback")
-        else:
-            service = EdgeService(EdgeChromiumDriverManager().install())
-            driver = webdriver.Edge(service=service, options=options)
+                logger.error(f"Failed to initialize Firefox driver: {str(e)}")
+                raise
+    
+    elif browser == "edge":
+        options = webdriver.EdgeOptions()
+        if headless:
+            options.add_argument("--headless")
+        for arg in browser_config.get("arguments", []):
+            options.add_argument(arg)
+        for pref in browser_config.get("preferences", {}).items():
+            options.add_experimental_option("prefs", {pref[0]: pref[1]})
+        from selenium.webdriver.edge.service import Service as EdgeService
+        from webdriver_manager.microsoft import EdgeChromiumDriverManager
+        service = EdgeService(EdgeChromiumDriverManager().install())
+        driver = webdriver.Edge(service=service, options=options)
+    
     else:
         raise ValueError(f"Unsupported browser: {browser}")
     
+    # Set window size
+    driver.set_window_size(
+        browser_config.get("window_size", {}).get("width", 1920),
+        browser_config.get("window_size", {}).get("height", 1080)
+    )
+    
     # Set implicit wait
-    driver.implicitly_wait(browser_config.get("implicit_wait", config["browser"].get("implicit_wait", 10)))
+    driver.implicitly_wait(browser_config.get("implicit_wait", 10))
+    
+    # Generate a unique session ID for parallel execution
+    session_id = str(uuid.uuid4())
+    driver.capabilities['sessionId'] = session_id
+    
+    # Add worker ID for parallel execution
+    if hasattr(request.config, 'slaveinput'):
+        worker_id = request.config.slaveinput.get('slaveid', 'unknown')
+        driver.capabilities['workerId'] = worker_id
     
     yield driver
     
     # Cleanup
-    driver.quit()
+    try:
+        driver.quit()
+    except Exception as e:
+        logger.error(f"Error quitting driver: {str(e)}")
 
 @pytest.fixture(scope="function")
 def screenshot_helper(driver):
@@ -233,7 +216,8 @@ def test_data():
     test_data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "test_data")
     result = {
         "test_data": {},
-        "env_config": {}
+        "env_config": {},
+        "browser_config": {}
     }
     
     try:
@@ -255,6 +239,13 @@ def test_data():
             with open(env_config_path, 'r') as f:
                 result["env_config"] = json.load(f)
                 logger.info("Loaded environment configuration from default.json")
+        
+        # Load browser configuration
+        browser_config_path = os.path.join(test_data_dir, "browser_config.json")
+        if os.path.exists(browser_config_path):
+            with open(browser_config_path, 'r') as f:
+                result["browser_config"] = json.load(f)
+                logger.info("Loaded browser configuration from browser_config.json")
         
         return result
     
