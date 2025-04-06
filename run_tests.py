@@ -105,12 +105,19 @@ def main() -> int:
     """
     # Parse command line arguments
     parser = argparse.ArgumentParser(description="Run Selenium tests with pytest")
-    parser.add_argument("test_path", nargs="?", default="tests", help="Path to test file or directory")
+    parser.add_argument("--test-path", help="Path to test file or directory")
+    parser.add_argument("test_path", nargs="?", default="tests", help="Path to test file or directory (positional argument)")
     parser.add_argument("--browser", choices=["chrome", "firefox", "edge"], help="Browser to use for tests")
     parser.add_argument("--headless", action="store_true", help="Run tests in headless mode")
     parser.add_argument("--skip-system-check", action="store_true", help="Skip system check")
     parser.add_argument("--parallel", type=int, help="Number of parallel workers for test execution")
     args = parser.parse_args()
+    
+    # Use --test-path if provided, otherwise use positional argument
+    if args.test_path:
+        test_path = args.test_path
+    else:
+        test_path = "tests"  # default value
     
     # Setup directories
     setup_directories()

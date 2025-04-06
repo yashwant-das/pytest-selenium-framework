@@ -224,14 +224,17 @@ def pytest_runtest_makereport(item, call):
 def test_data():
     """Load test data from JSON files.
     
-    This fixture loads all JSON files from the test_data directory and returns a dictionary
-    with the merged data from all files.
+    This fixture loads test data from test_data.json and environment configuration
+    from default.json separately.
     
     Returns:
-        dict: Dictionary containing merged test data from all JSON files
+        dict: Dictionary containing test data and environment configuration
     """
     test_data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "test_data")
-    test_data = {}
+    result = {
+        "test_data": {},
+        "env_config": {}
+    }
     
     try:
         # Create test_data directory if it doesn't exist
@@ -239,43 +242,25 @@ def test_data():
             os.makedirs(test_data_dir)
             logger.info(f"Created test_data directory: {test_data_dir}")
         
-        # Load all JSON files from the test_data directory
-        for filename in os.listdir(test_data_dir):
-            if filename.endswith(".json"):
-                file_path = os.path.join(test_data_dir, filename)
-                try:
-                    with open(file_path, 'r') as f:
-                        data = json.load(f)
-                        # Merge data into test_data
-                        test_data.update(data)
-                    logger.info(f"Loaded test data from {file_path}")
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse JSON file {file_path}: {e}")
-                except Exception as e:
-                    logger.error(f"Failed to load test data from {file_path}: {e}")
+        # Load test data
+        test_data_path = os.path.join(test_data_dir, "test_data.json")
+        if os.path.exists(test_data_path):
+            with open(test_data_path, 'r') as f:
+                result["test_data"] = json.load(f)
+                logger.info("Loaded test data from test_data.json")
         
-        # If no test data was loaded, create a default test data file
-        if not test_data:
-            default_test_data = {
-                "default": {
-                    "url": "https://www.example.com",
-                    "username": "test_user",
-                    "password": "test_password"
-                }
-            }
-            
-            default_file_path = os.path.join(test_data_dir, "default.json")
-            try:
-                with open(default_file_path, 'w') as f:
-                    json.dump(default_test_data, f, indent=4)
-                test_data.update(default_test_data)
-                logger.info(f"Created default test data file: {default_file_path}")
-            except Exception as e:
-                logger.error(f"Failed to create default test data file: {e}")
-    except Exception as e:
-        logger.error(f"Failed to load test data: {e}")
+        # Load environment configuration
+        env_config_path = os.path.join(test_data_dir, "default.json")
+        if os.path.exists(env_config_path):
+            with open(env_config_path, 'r') as f:
+                result["env_config"] = json.load(f)
+                logger.info("Loaded environment configuration from default.json")
+        
+        return result
     
-    return test_data 
+    except Exception as e:
+        logger.error(f"Error loading test data: {str(e)}")
+        return result
 
 def pytest_configure(config):
     """Register custom markers."""
