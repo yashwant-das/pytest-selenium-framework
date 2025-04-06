@@ -1,232 +1,202 @@
-# Selenium Python Test Framework
+# Selenium Test Automation Framework
 
-A robust and scalable test automation framework built with Python, Selenium, and pytest.
+A robust and maintainable test automation framework built with Python, Selenium, and pytest. This framework follows the Page Object Model (POM) design pattern and provides a comprehensive set of utilities for web application testing.
 
 ## Features
 
-- Page Object Model design pattern
-- Multi-browser support (Chrome, Firefox, Edge)
-- Configurable test environments (DEV, QA, STAGING, UAT, PROD)
-- HTML and Allure reporting
-- Screenshot capture on test failure
-- Email reporting
-- Logging and error handling
-- System check utility
-- Cross-platform support
-
-## Prerequisites
-
-- Python 3.7 or higher
-- Chrome, Firefox, or Edge browser
-- pip (Python package manager)
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd selenium-python-framework
-```
-
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Run system check:
-```bash
-python utilities/check_system.py
-```
-
-## System Check Utility
-
-The framework includes a system check utility that verifies all prerequisites and dependencies before running tests. To use it:
-
-```bash
-python utilities/check_system.py
-```
-
-The utility checks:
-- Python version
-- Required packages
-- Browser installations and drivers
-- Directory structure
-- Configuration files
-- System requirements
-
-Results are logged to both console and `system_check.log` file.
+- **Page Object Model**: Organized page classes for better maintainability
+- **Cross-Browser Testing**: Support for Chrome, Firefox, and Edge browsers
+- **Headless Mode**: Run tests without opening browser windows
+- **HTML Reports**: Detailed test execution reports with screenshots
+- **System Checks**: Environment verification before test execution
+- **Logging**: Comprehensive logging of test execution and system checks
+- **Configuration Management**: Flexible configuration for different environments
+- **Data-Driven Testing**: Support for external test data
 
 ## Project Structure
 
 ```
-selenium-python-framework/
-├── config/                 # Configuration files
-├── pages/                  # Page objects
-│   ├── base_page.py       # Base page class
-│   └── specific_pages/    # Page-specific classes
-├── tests/                 # Test files
-├── test_data/            # Test data files
-├── utilities/            # Utility functions
-├── reports/              # Test reports
-│   ├── html/            # HTML reports
-│   ├── screenshots/     # Failure screenshots
-│   └── allure-results/  # Allure results
-├── requirements.txt      # Python dependencies
-└── pytest.ini           # pytest configuration
+pytest-selenium-framework/
+├── config/                  # Configuration files
+│   └── config.json          # Main configuration file
+├── logs/                    # Log files
+│   ├── system_check.log     # System check logs
+│   └── test_execution.log   # Test execution logs
+├── pages/                   # Page Object Model classes
+│   ├── base_page.py         # Base page with common methods
+│   └── selenium_page.py     # Selenium website page
+├── reports/                 # Test reports
+│   ├── html/                # HTML reports
+│   └── screenshots/         # Failure screenshots
+├── test_data/               # Test data files
+│   └── test_data.json       # Test data for data-driven tests
+├── tests/                   # Test files
+│   ├── conftest.py          # Pytest configuration and fixtures
+│   └── test_selenium.py     # Selenium website tests
+├── utilities/               # Utility classes
+│   ├── screenshot_helper.py # Screenshot capture utility
+│   └── system_check.py      # System environment check utility
+├── run_system_check.py      # Script to run system checks
+├── run_tests.py             # Main script to run tests
+├── requirements.txt         # Project dependencies
+└── README.md                # Project documentation
+```
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/pytest-selenium-framework.git
+   cd pytest-selenium-framework
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Install browser drivers:
+   - Chrome: The framework will automatically download the appropriate ChromeDriver
+   - Firefox: Install GeckoDriver and add it to your PATH
+   - Edge: Install EdgeDriver and add it to your PATH
+
+## Usage
+
+### Running System Checks
+
+Before running tests, you can verify that your environment is properly set up:
+
+```bash
+python run_system_check.py
+```
+
+This will check:
+- Python version
+- Required packages
+- Browser installation
+- ChromeDriver availability
+- Directory structure
+
+### Running Tests
+
+Run all tests:
+```bash
+python run_tests.py
+```
+
+Run specific test file:
+```bash
+python run_tests.py --test-path tests/test_selenium.py
+```
+
+Run tests in a specific browser:
+```bash
+python run_tests.py --browser chrome
+```
+
+Run tests in headless mode:
+```bash
+python run_tests.py --headless
+```
+
+Skip system check:
+```bash
+python run_tests.py --skip-system-check
+```
+
+### Command Line Options
+
+- `--test-path`: Path to test file or directory
+- `--browser`: Browser to use (chrome, firefox, edge)
+- `--headless`: Run tests in headless mode
+- `--skip-system-check`: Skip system check before running tests
+
+## Page Object Model
+
+The framework follows the Page Object Model design pattern:
+
+- **BasePage**: Contains common methods for all pages
+- **Specific Pages**: Each page has its own class with specific locators and methods
+
+Example:
+```python
+from pages.base_page import BasePage
+
+class SeleniumPage(BasePage):
+    # Page-specific locators
+    LOCATORS = {
+        "title": ("tag name", "h1"),
+        "search_input": ("id", "searchbox"),
+        "search_button": ("id", "search-button")
+    }
+    
+    def search(self, query):
+        """Perform a search on the page"""
+        self.find_element(*self.LOCATORS["search_input"]).send_keys(query)
+        self.find_element(*self.LOCATORS["search_button"]).click()
 ```
 
 ## Configuration
 
-### Environment Configuration
+The framework uses a JSON configuration file (`config/config.json`) for:
 
-The framework supports multiple environments:
+- Browser settings
+- Test data
+- URLs
+- Timeouts
 
+Example:
 ```json
 {
-    "environment": {
-        "default": "qa",
-        "urls": {
-            "dev": "https://github.com",
-            "qa": "https://github.com",
-            "staging": "https://github.com",
-            "uat": "https://github.com",
-            "prod": "https://github.com"
-        }
-    }
+  "browser": {
+    "name": "chrome",
+    "headless": false,
+    "implicit_wait": 10
+  },
+  "urls": {
+    "selenium": "https://www.selenium.dev"
+  },
+  "timeouts": {
+    "page_load": 30,
+    "element_wait": 10
+  }
 }
-```
-
-### Browser Configuration
-
-```json
-{
-    "browser": {
-        "default": "chrome",
-        "headless": false,
-        "implicit_wait": 10,
-        "page_load_timeout": 30,
-        "script_timeout": 30
-    }
-}
-```
-
-## Running Tests
-
-1. Run all tests:
-```bash
-pytest
-```
-
-2. Run tests for a specific environment:
-```bash
-pytest --env=qa
-```
-
-3. Run tests with specific browser:
-```bash
-pytest --browser=chrome
-```
-
-4. Run tests with HTML report:
-```bash
-pytest --html=reports/html/report.html
-```
-
-## Page Objects
-
-### Base Page
-
-The `BasePage` class provides common functionality for all page objects:
-
-```python
-class BasePage:
-    def find_element(self, by, value):
-        """Find an element with explicit wait"""
-        pass
-
-    def click_element(self, by, value):
-        """Click an element with explicit wait"""
-        pass
-
-    def send_keys(self, by, value, text):
-        """Send keys to an element with explicit wait"""
-        pass
-```
-
-### Example Page Object
-
-```python
-class GitHubPage(BasePage):
-    # Locators
-    SIGN_IN_BUTTON = (By.LINK_TEXT, "Sign in")
-    USERNAME_INPUT = (By.ID, "login_field")
-    
-    def login(self, username, password):
-        """Perform login"""
-        pass
 ```
 
 ## Test Data
 
-Test data is stored in JSON format:
+Test data is stored in JSON files in the `test_data` directory:
 
 ```json
 {
-    "github": {
-        "login": {
-            "valid_credentials": {
-                "username": "testuser",
-                "password": "Test@123"
-            }
-        }
-    }
+  "selenium": {
+    "title": "Selenium",
+    "navigation_items": ["Home", "About", "Documentation", "Support", "Blog"]
+  }
 }
 ```
 
-## Reporting
+## Logging
 
-### HTML Reports
+The framework provides comprehensive logging:
 
-HTML reports are generated in the `reports/html` directory and include:
+- System check logs: `logs/system_check.log`
+- Test execution logs: `logs/test_execution.log`
+
+## Reports
+
+After test execution, HTML reports are generated in the `reports/html` directory:
+
 - Test results
-- Screenshots of failures
-- Test execution details
-
-### Allure Reports
-
-Allure reports provide detailed test execution information:
-```bash
-pytest --alluredir=reports/allure-results
-allure serve reports/allure-results
-```
-
-## Best Practices
-
-1. **Page Objects**
-   - Keep locators at class level
-   - Use meaningful method names
-   - Implement reusable functions
-
-2. **Test Data**
-   - Store data in JSON files
-   - Use environment-specific data
-   - Keep sensitive data secure
-
-3. **Configuration**
-   - Use environment variables
-   - Keep configurations separate
-   - Document all settings
-
-4. **Reporting**
-   - Capture screenshots on failure
-   - Use descriptive test names
-   - Add test documentation
+- Screenshots on failure
+- Test execution time
+- Environment details
 
 ## Contributing
 
