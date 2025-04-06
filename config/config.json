@@ -40,32 +40,6 @@
             "headless": false
         }
     },
-    "test_data": {
-        "path": "test_data",
-        "default_file": "test_data.json",
-        "selenium": {
-            "navigation": {
-                "home": "Home",
-                "downloads": "Downloads",
-                "documentation": "Documentation",
-                "projects": "Projects",
-                "blog": "Blog"
-            },
-            "downloads": {
-                "java": "Java",
-                "python": "Python",
-                "javascript": "JavaScript",
-                "ruby": "Ruby",
-                "csharp": "C#",
-                "php": "PHP"
-            }
-        },
-        "search": {
-            "valid_term": "Selenium WebDriver",
-            "invalid_term": "xyz123nonexistent",
-            "special_chars": "!@#$%^&*()"
-        }
-    },
     "reporting": {
         "screenshots": true,
         "logs": true,
@@ -85,10 +59,5 @@
         "page_load": 30,
         "script": 30,
         "implicit": 10
-    },
-    "github": {
-        "url": "https://github.com",
-        "login_url": "https://github.com/login",
-        "timeout": 10
     }
 } 

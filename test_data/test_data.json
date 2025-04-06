@@ -1,68 +1,4 @@
 {
-    "users": {
-        "valid_user": {
-            "username": "testuser",
-            "password": "Test@123"
-        },
-        "invalid_user": {
-            "username": "invalid",
-            "password": "wrong"
-        }
-    },
-    "github": {
-        "login": {
-            "valid_credentials": {
-                "username": "test.user@example.com",
-                "password": "TestP@ssw0rd123"
-            },
-            "invalid_credentials": {
-                "username": "invalid.user@example.com",
-                "password": "WrongP@ssw0rd"
-            },
-            "two_factor": {
-                "username": "2fa.user@example.com",
-                "password": "2FAP@ssw0rd123",
-                "code": "123456"
-            }
-        }
-    },
-    "search": {
-        "valid_term": "Selenium WebDriver",
-        "invalid_term": "xyz123!@#",
-        "special_chars": "!@#$%^&*()",
-        "long_term": "This is a very long search term that should be handled properly by the search functionality"
-    },
-    "forms": {
-        "contact": {
-            "name": "John Doe",
-            "email": "john.doe@example.com",
-            "subject": "Test Subject",
-            "message": "This is a test message"
-        },
-        "registration": {
-            "first_name": "John",
-            "last_name": "Doe",
-            "email": "john.doe@example.com",
-            "phone": "1234567890",
-            "address": "123 Test Street",
-            "city": "Test City",
-            "country": "United States",
-            "zip_code": "12345"
-        }
-    },
-    "products": {
-        "search": {
-            "category": "Electronics",
-            "min_price": 100,
-            "max_price": 1000,
-            "brand": "TestBrand"
-        },
-        "filter": {
-            "price_range": [100, 500],
-            "rating": 4,
-            "availability": "in_stock"
-        }
-    },
     "selenium": {
         "navigation": {
             "about": "About",
@@ -76,11 +12,6 @@
             "webdriver": "Selenium WebDriver",
             "ide": "Selenium IDE",
             "grid": "Selenium Grid"
-        },
-        "search": {
-            "valid_term": "WebDriver",
-            "invalid_term": "xyz123",
-            "special_chars": "!@#$%^&*()"
         },
         "downloads": {
             "languages": [

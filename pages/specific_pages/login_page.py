@@ -20,13 +20,8 @@ class LoginPage(BasePage):
         self.config = config
         self.logger = logging.getLogger(__name__)
 
-    def navigate_to_login(self):
+    def navigate_to_login(self, login_url):
         """Navigate to the login page"""
-        if not self.config or 'github' not in self.config:
-            self.logger.error("GitHub configuration not found")
-            raise ValueError("GitHub configuration not found")
-        
-        login_url = self.config['github']['login_url']
         self.logger.info(f"Navigating to login page: {login_url}")
         self.driver.get(login_url)
         try:
