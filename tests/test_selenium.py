@@ -21,7 +21,7 @@ def test_navigation_items(driver, config, test_data):
     nav_items = page.get_navigation_items()
     
     # Get expected items from test data
-    expected_items = test_data["selenium"]["navigation"].values()
+    expected_items = list(test_data["test_data"]["selenium"]["navigation"].values())
     
     # Print for debugging
     print(f"Expected items: {list(expected_items)}")
@@ -29,4 +29,4 @@ def test_navigation_items(driver, config, test_data):
     
     # Verify each expected item is present
     for item in expected_items:
-        assert item in nav_items, f"Navigation item '{item}' should be present" 
+        assert item in nav_items, f"Navigation item '{item}' should be present"

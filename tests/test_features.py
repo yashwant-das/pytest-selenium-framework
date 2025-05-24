@@ -49,7 +49,7 @@ def test_parallel_execution(driver, test_data):
     # If running in parallel mode, verify that we have a unique session ID
     if hasattr(driver, 'capabilities') and 'sessionId' in driver.capabilities:
         print(f"Running in parallel mode with session ID: {driver.capabilities['sessionId']}")
-        print(f"Running on worker: {driver.capabilities['workerId']}")
+        print(f"Running on worker: {driver.capabilities.get('workerId', 'unknown')}")
 
 def test_screenshot_on_failure(driver, test_data):
     """Test that screenshots are taken on test failure"""
@@ -94,4 +94,4 @@ def test_implicit_wait(driver, test_data):
         element = driver.find_element(By.ID, "non-existent-element")
         assert False, "Element should not be found"
     except:
-        assert True, "Implicit wait worked as expected" 
+        assert True, "Implicit wait worked as expected"
