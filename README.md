@@ -680,9 +680,9 @@ The `setup.py` file is used to define metadata about the package and specify dep
 
 ### Purpose for End Users
 
-- **Easy Installation**: End users can easily install the package using pip. They simply need to run a command like `pip install selenium-python-framework` if the package is available on PyPI, or `pip install .` if they have downloaded the source code.
+- **Easy Installation**: End users can easily install the package and its dependencies using `pip install .` after downloading the source code from GitHub.
 - **Dependency Management**: The `setup.py` file automatically handles the installation of all required dependencies. End users don't need to manually install each dependency; pip will take care of this for them.
 - **Version Control**: The `setup.py` file specifies the version of the package, allowing users to know which version they are installing. This is useful for compatibility and troubleshooting.
 - **Metadata**: It provides metadata about the package, such as the author, description, and supported Python versions. This information helps users understand what the package does and who maintains it.
-- **Distribution**: If the package is distributed, `setup.py` is used to create distribution files that can be uploaded to PyPI. This makes it easy for users to find and install the package.
+- **Development Installation**: Developers can use `pip install -e .` for editable installation during development, allowing changes to be reflected immediately.
 - **Customization**: Advanced users can customize the installation process by modifying the `setup.py` file, although this is less common for typical end users.
