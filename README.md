@@ -106,6 +106,86 @@ pytest-selenium-framework/
 
 ## Usage
 
+### Enhanced Test Orchestrator Script
+
+The framework includes a powerful `test_all_features.sh` script that provides comprehensive testing orchestration with professional-grade features:
+
+#### Key Features
+
+- **Colored Output**: Professional logging with color-coded status messages
+- **Flexible Execution**: Command-line options for targeted testing
+- **Error Tracking**: Comprehensive failure reporting and statistics
+- **Auto-Detection**: Automatic Python executable detection (python3/python)
+- **Performance Metrics**: Execution timing and detailed summaries
+- **Environment Integration**: Optional system validation with skip capability
+
+#### Usage Examples
+
+```bash
+# Run comprehensive testing (all browsers, all configurations)
+./test_all_features.sh
+
+# Quick testing (basic configurations only)
+./test_all_features.sh --quick
+
+# Browser-specific testing
+./test_all_features.sh --chrome-only
+./test_all_features.sh --firefox-only
+./test_all_features.sh --edge-only
+
+# CI/CD friendly (skip system check)
+./test_all_features.sh --firefox-only --no-system-check
+
+# Help and options
+./test_all_features.sh --help
+```
+
+#### Command-Line Options
+
+| Option | Description | Use Case |
+|--------|-------------|----------|
+| `--chrome-only` | Run only Chrome browser tests | Chrome-specific validation |
+| `--firefox-only` | Run only Firefox browser tests | Firefox-specific validation |
+| `--edge-only` | Run only Edge browser tests | Edge-specific validation |
+| `--quick` | Run basic configurations only | Fast development testing |
+| `--no-system-check` | Skip system environment validation | CI/CD pipelines |
+| `--help` | Display usage information | Reference and documentation |
+
+#### Test Configuration Matrix
+
+**Quick Mode (--quick):**
+
+- Browser normal mode
+- Browser headless mode
+
+**Full Mode (default):**
+
+- Browser normal mode
+- Browser headless mode  
+- Parallel execution (2-3 workers)
+- Headless + Parallel combinations
+- Advanced configurations (4+ workers)
+- Allure reporting integration
+- Cleanup functionality testing
+
+#### Example Output
+
+```bash
+[INFO] Starting comprehensive framework testing...
+[INFO] === CHROME BROWSER TESTS ===
+[SUCCESS] Test configuration passed: Chrome - Normal mode
+[SUCCESS] Test configuration passed: Chrome - Headless mode
+========================================
+[INFO] TEST EXECUTION SUMMARY
+========================================
+Total Test Configurations: 8
+Passed: 8
+Failed: 0
+Duration: 2m 45s
+========================================
+[SUCCESS] All test configurations passed!
+```
+
 ### Running System Checks
 
 Before running tests, verify that your environment is properly set up:
@@ -353,7 +433,7 @@ The framework generates comprehensive test reports in multiple formats:
 Standard pytest-html reports are automatically generated:
 
 - **Location**: `reports/html/report.html`
-- **Features**: 
+- **Features**:
   - Test results summary
   - Screenshots on failure
   - Test execution time
