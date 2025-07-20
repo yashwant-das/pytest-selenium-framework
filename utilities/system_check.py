@@ -123,59 +123,87 @@ class SystemCheck:
         self.logger.info("Checking ChromeDriver...")
         
         try:
-            # Get ChromeDriver and check version
-            driver_path = ChromeDriverManager().install()
-            
-            # Ensure we have the actual chromedriver executable, not a text file
-            if os.path.isdir(driver_path):
-                # If it's a directory, look for chromedriver inside
-                actual_driver_path = os.path.join(driver_path, "chromedriver")
-            elif os.path.basename(driver_path) == "chromedriver":
-                # If the filename is exactly "chromedriver"
-                actual_driver_path = driver_path
-            else:
-                # The path might be pointing to another file in the driver directory
-                driver_dir = os.path.dirname(driver_path)
-                actual_driver_path = os.path.join(driver_dir, "chromedriver")
-            
-            if os.path.exists(actual_driver_path):
-                # Ensure the driver is executable
-                if not os.access(actual_driver_path, os.X_OK):
-                    os.chmod(actual_driver_path, 0o755)
-                    self.logger.info(f"✅ Fixed permissions for ChromeDriver at {actual_driver_path}")
+            # First, try to check if chromedriver is in PATH and get version
+            try:
+                result = subprocess.run(["chromedriver", "--version"], capture_output=True, text=True, check=True)
+                version_info = result.stdout.strip().split()[1] if result.stdout else "unknown"
+                self.logger.info(f"✅ ChromeDriver version {version_info} is available.")
                 
-                # Try to get ChromeDriver version
-                try:
-                    result = subprocess.run([actual_driver_path, "--version"], capture_output=True, text=True, check=True)
-                    version_info = result.stdout.strip().split()[1] if result.stdout else "unknown"
-                    self.logger.info(f"✅ ChromeDriver version {version_info} is available.")
+                # Test ChromeDriver functionality
+                from selenium.webdriver.chrome.service import Service as ChromeService
+                service = ChromeService()
+                options = webdriver.ChromeOptions()
+                options.add_argument("--headless")
+                options.add_argument("--no-sandbox")
+                options.add_argument("--disable-dev-shm-usage")
+                
+                driver = webdriver.Chrome(service=service, options=options)
+                driver.quit()
+                self.logger.info("✅ ChromeDriver is working correctly.")
+                return True
+                
+            except (subprocess.SubprocessError, FileNotFoundError):
+                self.logger.warning("⚠️ ChromeDriver not found in PATH, trying webdriver-manager...")
+                
+                # Fall back to webdriver-manager
+                from selenium.webdriver.chrome.service import Service as ChromeService
+                
+                driver_path = ChromeDriverManager().install()
+                
+                # Ensure we have the actual chromedriver executable, not a text file
+                if os.path.isdir(driver_path):
+                    # If it's a directory, look for chromedriver inside
+                    actual_driver_path = os.path.join(driver_path, "chromedriver")
+                elif os.path.basename(driver_path) == "chromedriver":
+                    # If the filename is exactly "chromedriver"
+                    actual_driver_path = driver_path
+                else:
+                    # The path might be pointing to another file in the driver directory
+                    driver_dir = os.path.dirname(driver_path)
+                    actual_driver_path = os.path.join(driver_dir, "chromedriver")
+                
+                if os.path.exists(actual_driver_path):
+                    # Ensure the driver is executable
+                    if not os.access(actual_driver_path, os.X_OK):
+                        os.chmod(actual_driver_path, 0o755)
+                        self.logger.info(f"✅ Fixed permissions for ChromeDriver at {actual_driver_path}")
                     
-                    # Test ChromeDriver functionality
-                    from selenium.webdriver.chrome.service import Service as ChromeService
-                    service = ChromeService(actual_driver_path)
-                    options = webdriver.ChromeOptions()
-                    options.add_argument("--headless")
-                    options.add_argument("--no-sandbox")
-                    options.add_argument("--disable-dev-shm-usage")
-                    
-                    driver = webdriver.Chrome(service=service, options=options)
-                    driver.quit()
-                    self.logger.info("✅ ChromeDriver is working correctly.")
-                    
-                except Exception as test_error:
-                    self.logger.error(f"❌ ChromeDriver failed to initialize: {str(test_error)}")
-                    self.logger.error("❌ Chrome browser may not be installed or ChromeDriver is incompatible.")
+                    # Try to get ChromeDriver version
+                    try:
+                        result = subprocess.run([actual_driver_path, "--version"], capture_output=True, text=True, check=True)
+                        version_info = result.stdout.strip().split()[1] if result.stdout else "unknown"
+                        self.logger.info(f"✅ ChromeDriver version {version_info} is available.")
+                        
+                        # Test ChromeDriver functionality
+                        service = ChromeService(actual_driver_path)
+                        options = webdriver.ChromeOptions()
+                        options.add_argument("--headless")
+                        options.add_argument("--no-sandbox")
+                        options.add_argument("--disable-dev-shm-usage")
+                        
+                        driver = webdriver.Chrome(service=service, options=options)
+                        driver.quit()
+                        self.logger.info("✅ ChromeDriver is working correctly.")
+                        return True
+                        
+                    except Exception as test_error:
+                        self.logger.error(f"❌ ChromeDriver failed to initialize: {str(test_error)}")
+                        self.logger.error("❌ Chrome browser may not be installed or ChromeDriver is incompatible.")
+                        self.checks_passed = False
+                        self.has_errors = True
+                        return False
+                else:
+                    self.logger.error("❌ ChromeDriver executable not found or not executable.")
                     self.checks_passed = False
                     self.has_errors = True
-            else:
-                self.logger.error("❌ ChromeDriver executable not found or not executable.")
-                self.checks_passed = False
-                self.has_errors = True
+                    return False
+                    
         except Exception as e:
             self.logger.error(f"❌ Error checking ChromeDriver: {str(e)}")
             self.logger.warning("⚠️ ChromeDriver is not available. Chrome tests will fail.")
             self.checks_passed = False
             self.has_errors = True
+            return False
     
     def check_firefox_browser(self):
         """Check if Firefox browser is installed"""
@@ -308,65 +336,91 @@ class SystemCheck:
         self.logger.info("Checking EdgeDriver...")
         
         try:
-            # Use webdriver-manager to get/download EdgeDriver
-            from selenium.webdriver.edge.service import Service as EdgeService
-            from webdriver_manager.microsoft import EdgeChromiumDriverManager
-            
-            driver_path = EdgeChromiumDriverManager().install()
-            
-            # Ensure we have the actual msedgedriver executable
-            if os.path.isdir(driver_path):
-                # If it's a directory, look for msedgedriver inside
-                actual_driver_path = os.path.join(driver_path, "msedgedriver")
-            elif os.path.basename(driver_path) == "msedgedriver":
-                # If the filename is exactly "msedgedriver"
-                actual_driver_path = driver_path
-            else:
-                # The path might be pointing to another file in the driver directory
-                driver_dir = os.path.dirname(driver_path)
-                actual_driver_path = os.path.join(driver_dir, "msedgedriver")
-            
-            if os.path.exists(actual_driver_path):
-                # Ensure the driver is executable
-                if not os.access(actual_driver_path, os.X_OK):
-                    os.chmod(actual_driver_path, 0o755)
-                    self.logger.info(f"✅ Fixed permissions for EdgeDriver at {actual_driver_path}")
+            # First, try to check if msedgedriver is in PATH and get version
+            try:
+                result = subprocess.run(["msedgedriver", "--version"], capture_output=True, text=True, check=True)
+                # EdgeDriver output format: "Microsoft Edge WebDriver 138.0.3351.95 (...)"
+                version_line = result.stdout.strip()
+                version_info = version_line.split()[3] if len(version_line.split()) > 3 else "unknown"
+                self.logger.info(f"✅ EdgeDriver version {version_info} is available.")
                 
-                # Get EdgeDriver version
-                try:
-                    result = subprocess.run([actual_driver_path, "--version"], capture_output=True, text=True, check=True)
-                    version_info = result.stdout.strip().split()[3] if result.stdout else "unknown"  # EdgeDriver format is different
-                    self.logger.info(f"✅ EdgeDriver version {version_info} is available.")
+                # Test EdgeDriver functionality
+                from selenium.webdriver.edge.service import Service as EdgeService
+                service = EdgeService()
+                options = webdriver.EdgeOptions()
+                options.add_argument("--headless")
+                options.add_argument("--no-sandbox")
+                options.add_argument("--disable-dev-shm-usage")
+                
+                driver = webdriver.Edge(service=service, options=options)
+                driver.quit()
+                self.logger.info("✅ EdgeDriver is working correctly.")
+                return True
+                
+            except (subprocess.SubprocessError, FileNotFoundError):
+                self.logger.warning("⚠️ EdgeDriver not found in PATH, trying webdriver-manager...")
+                
+                # Fall back to webdriver-manager
+                from selenium.webdriver.edge.service import Service as EdgeService
+                from webdriver_manager.microsoft import EdgeChromiumDriverManager
+                
+                driver_path = EdgeChromiumDriverManager().install()
+                
+                # Ensure we have the actual msedgedriver executable
+                if os.path.isdir(driver_path):
+                    # If it's a directory, look for msedgedriver inside
+                    actual_driver_path = os.path.join(driver_path, "msedgedriver")
+                elif os.path.basename(driver_path) == "msedgedriver":
+                    # If the filename is exactly "msedgedriver"
+                    actual_driver_path = driver_path
+                else:
+                    # The path might be pointing to another file in the driver directory
+                    driver_dir = os.path.dirname(driver_path)
+                    actual_driver_path = os.path.join(driver_dir, "msedgedriver")
+                
+                if os.path.exists(actual_driver_path):
+                    # Ensure the driver is executable
+                    if not os.access(actual_driver_path, os.X_OK):
+                        os.chmod(actual_driver_path, 0o755)
+                        self.logger.info(f"✅ Fixed permissions for EdgeDriver at {actual_driver_path}")
                     
-                    # Test EdgeDriver functionality
-                    service = EdgeService(actual_driver_path)
-                    options = webdriver.EdgeOptions()
-                    options.add_argument("--headless")
-                    options.add_argument("--no-sandbox")
-                    options.add_argument("--disable-dev-shm-usage")
-                    
-                    driver = webdriver.Edge(service=service, options=options)
-                    driver.quit()
-                    self.logger.info("✅ EdgeDriver is working correctly.")
-                    return
-                    
-                except Exception as driver_error:
-                    self.logger.error(f"❌ EdgeDriver failed to initialize: {str(driver_error)}")
-                    self.logger.error("❌ Edge browser may not be installed or EdgeDriver is incompatible.")
+                    # Get EdgeDriver version
+                    try:
+                        result = subprocess.run([actual_driver_path, "--version"], capture_output=True, text=True, check=True)
+                        version_line = result.stdout.strip()
+                        version_info = version_line.split()[3] if len(version_line.split()) > 3 else "unknown"
+                        self.logger.info(f"✅ EdgeDriver version {version_info} is available.")
+                        
+                        # Test EdgeDriver functionality
+                        service = EdgeService(actual_driver_path)
+                        options = webdriver.EdgeOptions()
+                        options.add_argument("--headless")
+                        options.add_argument("--no-sandbox")
+                        options.add_argument("--disable-dev-shm-usage")
+                        
+                        driver = webdriver.Edge(service=service, options=options)
+                        driver.quit()
+                        self.logger.info("✅ EdgeDriver is working correctly.")
+                        return True
+                        
+                    except Exception as test_error:
+                        self.logger.error(f"❌ EdgeDriver failed to initialize: {str(test_error)}")
+                        self.logger.error("❌ Edge browser may not be installed or EdgeDriver is incompatible.")
+                        self.checks_passed = False
+                        self.has_errors = True
+                        return False
+                else:
+                    self.logger.error("❌ EdgeDriver executable not found or not executable.")
                     self.checks_passed = False
                     self.has_errors = True
-                    return
-            else:
-                self.logger.error("❌ EdgeDriver executable not found or not executable.")
-                self.checks_passed = False
-                self.has_errors = True
-                return
-                
+                    return False
+                    
         except Exception as e:
             self.logger.error(f"❌ Error checking EdgeDriver: {str(e)}")
             self.logger.warning("⚠️ EdgeDriver is not available. Edge tests will fail.")
             self.checks_passed = False
             self.has_errors = True
+            return False
     
     def check_directory_structure(self):
         """Check if required directories exist"""
