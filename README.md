@@ -5,128 +5,222 @@ A robust and maintainable test automation framework built with Python, Selenium,
 ## Features
 
 - **Page Object Model**: Organized page classes for better maintainability
-- **Cross-Browser Testing**: Support for Chrome, Firefox, and Edge browsers
+- **Cross-Browser Testing**: Support for Chrome, Firefox, and Edge browsers with auto-download capabilities
 - **Headless Mode**: Run tests without opening browser windows
-- **HTML Reports**: Detailed test execution reports with screenshots
-- **System Checks**: Environment verification before test execution
+- **Parallel Execution**: Run tests in parallel with configurable worker count for faster execution
+- **Multiple Report Formats**: HTML reports with screenshots and interactive Allure reports
+- **Auto-Driver Management**: Automatic driver download with PATH detection fallback
+- **System Checks**: Comprehensive environment verification before test execution
 - **Logging**: Comprehensive logging of test execution and system checks
 - **Configuration Management**: Flexible configuration for different environments
 - **Data-Driven Testing**: Support for external test data
+- **Screenshot Capture**: Automatic screenshots on test failures with Allure integration
+- **Cleanup Management**: Optional cleanup of temporary files and previous test results
 
 ## Project Structure
 
-```
+```text
 pytest-selenium-framework/
 ├── config/                  # Configuration files
 │   └── config.json          # Browser and technical settings
-├── drivers/                 # Browser driver files
-├── logs/                    # Log files
+├── logs/                    # Log files (auto-generated)
 │   ├── system_check.log     # System check logs
-│   └── test_execution.log   # Test execution logs
+│   └── test_run_*.log       # Test execution logs with timestamps
 ├── pages/                   # Page Object Model classes
+│   ├── __init__.py          # Package initialization
 │   ├── base_page.py         # Base page with common methods
 │   └── selenium_page.py     # Selenium website page
-├── reports/                 # Test reports
-│   ├── html/                # HTML reports
-│   └── screenshots/         # Failure screenshots
+├── reports/                 # Test reports (auto-generated)
+│   ├── html/                # HTML reports with screenshots
+│   ├── screenshots/         # Failure screenshots with error logs
+│   ├── allure-results/      # Allure test results (raw data)
+│   └── allure-report/       # Generated Allure HTML reports
 ├── test_data/               # Test data and environment config files
 │   ├── default.json         # Environment-specific settings
 │   └── test_data.json       # Test data for data-driven tests
 ├── tests/                   # Test files
 │   ├── conftest.py          # Pytest configuration and fixtures
-│   └── test_selenium.py     # Selenium website tests
+│   ├── test_selenium.py     # Basic Selenium website tests
+│   ├── test_features.py     # Advanced feature tests
+│   └── test_parallel.py     # Parallel execution tests
 ├── utilities/               # Utility classes
+│   ├── __init__.py          # Package initialization
+│   ├── logger.py            # Logging configuration
 │   ├── screenshot_helper.py # Screenshot capture utility
 │   └── system_check.py      # System environment check utility
-├── .venv/                   # Python virtual environment
+├── venv/                    # Python virtual environment
 ├── run_system_check.py      # Script to run system checks
-├── run_tests.py             # Main script to run tests
+├── run_tests.py             # Main script to run tests with advanced options
 ├── test_all_features.sh     # Shell script for running all tests
 ├── requirements.txt         # Project dependencies
 ├── setup.py                 # Package setup script
-├── pytest.ini              # Pytest configuration
+├── pytest.ini               # Pytest configuration with Allure support
 └── README.md                # Project documentation
 ```
 
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yashwant-das/pytest-selenium-framework.git
    cd pytest-selenium-framework
    ```
 
 2. Create and activate a virtual environment:
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Install browser drivers:
-   - Chrome: The framework will automatically download the appropriate ChromeDriver
-   - Firefox: Install GeckoDriver and add it to your PATH
-   - Edge: Install EdgeDriver and add it to your PATH
+4. Browser Driver Setup:
+
+   The framework supports multiple driver installation methods:
+
+   **Option A: Automatic Download (Recommended)**
+   - The framework automatically downloads drivers using webdriver-manager
+   - No manual setup required for Chrome and Firefox
+   - Edge driver may require manual installation due to DNS issues
+
+   **Option B: Manual Installation (More Reliable)**
+   
+   ```bash
+   # macOS with Homebrew
+   brew install chromedriver geckodriver
+   
+   # Add EdgeDriver manually to PATH
+   # Download from: https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
+   ```
+   
+   **Option C: PATH Detection**
+   - The framework first checks for drivers in your system PATH
+   - Falls back to webdriver-manager if PATH drivers not found
+   - Provides the most reliable driver resolution
 
 ## Usage
 
 ### Running System Checks
 
-Before running tests, you can verify that your environment is properly set up:
+Before running tests, verify that your environment is properly set up:
 
 ```bash
 python run_system_check.py
 ```
 
-This will check:
-- Python version
-- Required packages
-- Browser installation
-- ChromeDriver availability
+The system check validates:
+
+- Python version compatibility (3.7+)
+- Required packages installation
+- Browser installation (Chrome, Firefox, Edge)
+- Driver availability (PATH detection + webdriver-manager fallback)
 - Directory structure
+- Driver functionality testing
+
+**Sample Output:**
+```text
+✅ Python version 3.13.1 is compatible
+✅ Package 'selenium' is installed
+✅ Chrome browser is installed
+✅ ChromeDriver version 138.0.7204.157 is available
+✅ ChromeDriver is working correctly
+✅ Firefox browser is installed
+✅ GeckoDriver version 0.36.0 is available
+✅ GeckoDriver is working correctly
+✅ Edge browser is installed
+✅ EdgeDriver version 138.0.3351.95 is available
+✅ EdgeDriver is working correctly
+✅ All system checks PASSED! The system is ready for automation
+```
 
 ### Running Tests
 
-Run all tests:
+**Basic Test Execution:**
+
 ```bash
+# Run all tests
 python run_tests.py
-```
 
-Run specific test file:
-```bash
+# Run specific test file
 python run_tests.py --test-path tests/test_selenium.py
+
+# Run specific test method
+python run_tests.py --test-path tests/test_features.py::test_browser_support
 ```
 
-Run tests in a specific browser:
+**Browser Selection:**
+
 ```bash
+# Run tests in Chrome (default)
 python run_tests.py --browser chrome
-```
 
-Run tests in headless mode:
-```bash
-python run_tests.py --headless
-```
+# Run tests in Firefox
+python run_tests.py --browser firefox
 
-Run tests in Edge browser:
-```bash
+# Run tests in Edge
 python run_tests.py --browser edge
 ```
 
-Skip system check:
+**Execution Modes:**
+
 ```bash
+# Run tests in headless mode (faster, no UI)
+python run_tests.py --headless
+
+# Run tests in parallel (much faster for large test suites)
+python run_tests.py --parallel 4
+
+# Combine options for optimal performance
+python run_tests.py --browser chrome --headless --parallel 4
+```
+
+**Cleanup and System Options:**
+
+```bash
+# Clean previous results before running (fresh start)
+python run_tests.py --clean
+
+# Skip system check (faster startup)
 python run_tests.py --skip-system-check
+
+# Environment-specific testing
+python run_tests.py --env qa
+```
+
+**Advanced Examples:**
+
+```bash
+# Full parallel execution with cleanup
+python run_tests.py --test-path tests/test_features.py --parallel 4 --headless --clean
+
+# Cross-browser testing
+python run_tests.py --browser chrome --test-path tests/test_parallel.py
+python run_tests.py --browser firefox --test-path tests/test_parallel.py  
+python run_tests.py --browser edge --test-path tests/test_parallel.py
 ```
 
 ### Command Line Options
 
-- `--test-path`: Path to test file or directory
-- `--browser`: Browser to use (chrome, firefox, edge)
-- `--headless`: Run tests in headless mode
-- `--skip-system-check`: Skip system check before running tests
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--test-path` | Path to test file or directory | `--test-path tests/test_features.py` |
+| `--browser` | Browser to use (chrome, firefox, edge) | `--browser firefox` |
+| `--headless` | Run tests in headless mode | `--headless` |
+| `--parallel` | Number of parallel workers | `--parallel 4` |
+| `--skip-system-check` | Skip system check before running tests | `--skip-system-check` |
+| `--clean` | Clean previous results and temp files | `--clean` |
+| `--env` | Environment configuration to use | `--env staging` |
+
+**Performance Comparison:**
+- Sequential execution: ~20 seconds for 7 tests
+- Parallel execution (4 workers): ~10 seconds for 7 tests (50% faster)
+- Headless mode: Additional 20-30% performance improvement
 
 ## Page Object Model
 
@@ -250,6 +344,66 @@ This separation provides several benefits:
 - Better security for sensitive data
 - Improved collaboration among team members
 
+## Reports
+
+The framework generates comprehensive test reports in multiple formats:
+
+### HTML Reports
+
+Standard pytest-html reports are automatically generated:
+
+- **Location**: `reports/html/report.html`
+- **Features**: 
+  - Test results summary
+  - Screenshots on failure
+  - Test execution time
+  - Environment details
+  - Browser information
+
+### Allure Reports
+
+Interactive Allure reports provide enhanced visualization:
+
+**Generate and View Allure Reports:**
+
+```bash
+# Generate Allure report
+allure generate reports/allure-results -o reports/allure-report --clean
+
+# Serve interactive report
+allure serve reports/allure-results
+```
+
+**Allure Features:**
+- Interactive test result dashboard
+- Test execution trends and history
+- Screenshots and error logs attached to failed tests
+- Test categorization and filtering
+- Timeline view of test execution
+- Environment and configuration details
+
+**Sample Allure Commands:**
+
+```bash
+# View existing Allure report
+allure serve reports/allure-results
+
+# Generate static report
+allure generate reports/allure-results -o reports/allure-report
+
+# Open static report in browser (macOS)
+open reports/allure-report/index.html
+```
+
+### Screenshots
+
+Screenshots are automatically captured and attached to reports:
+
+- **On Failure**: All failed tests automatically capture screenshots
+- **Integration**: Screenshots are embedded in both HTML and Allure reports
+- **Storage**: `reports/screenshots/` with timestamps and test names  
+- **Error Logs**: Detailed error information saved alongside screenshots
+
 ## Test Data
 
 Test data is stored in JSON files in the `test_data` directory:
@@ -259,25 +413,85 @@ Test data is stored in JSON files in the `test_data` directory:
   "selenium": {
     "title": "Selenium",
     "navigation_items": ["Home", "About", "Documentation", "Support", "Blog"]
+  },
+  "browser_config": {
+    "chrome": {
+      "arguments": ["--no-sandbox", "--disable-dev-shm-usage"],
+      "preferences": {
+        "download.default_directory": "./downloads"
+      }
+    }
   }
 }
 ```
 
 ## Logging
 
-The framework provides comprehensive logging:
+The framework provides comprehensive logging with automatic timestamping:
 
-- System check logs: `logs/system_check.log`
-- Test execution logs: `logs/test_execution.log`
+- **System Check Logs**: `logs/system_check.log`
+- **Test Execution Logs**: `logs/test_run_YYYYMMDD_HHMMSS.log`
+- **Console Logging**: Real-time test execution information
+- **Log Levels**: INFO, WARNING, ERROR with proper formatting
 
-## Reports
+**Log Features:**
+- Automatic log rotation with timestamps
+- Detailed browser configuration logging
+- Driver detection and initialization logs
+- Test execution progress tracking
 
-After test execution, HTML reports are generated in the `reports/html` directory:
+## Advanced Features
 
-- Test results
-- Screenshots on failure
-- Test execution time
-- Environment details
+### Parallel Test Execution
+
+The framework supports parallel test execution using pytest-xdist:
+
+```bash
+# Run tests with 4 parallel workers
+python run_tests.py --parallel 4
+
+# Optimal parallel execution with headless mode
+python run_tests.py --parallel 4 --headless --browser chrome
+```
+
+**Benefits:**
+
+- 50% faster execution with 4 workers
+- Dynamic load balancing with work-stealing scheduling
+- Independent browser sessions for each worker
+- Automatic test distribution across workers
+
+### Driver Management
+
+Smart driver detection and management:
+
+1. **PATH Detection**: Checks system PATH for installed drivers first
+2. **Auto-Download**: Falls back to webdriver-manager for automatic download
+3. **Version Compatibility**: Ensures driver-browser compatibility
+4. **Cross-Platform**: Works on macOS, Windows, and Linux
+
+### Environment Management
+
+Flexible environment configuration:
+
+```bash
+# Test against different environments
+python run_tests.py --env dev
+python run_tests.py --env staging  
+python run_tests.py --env prod
+```
+
+### Cleanup Management
+
+Optional cleanup for different use cases:
+
+```bash
+# Development: Preserve history for debugging
+python run_tests.py
+
+# CI/CD: Fresh start for consistent results  
+python run_tests.py --clean
+```
 
 ## Contributing
 
@@ -302,4 +516,4 @@ The `setup.py` file is used to define metadata about the package and specify dep
 - **Version Control**: The `setup.py` file specifies the version of the package, allowing users to know which version they are installing. This is useful for compatibility and troubleshooting.
 - **Metadata**: It provides metadata about the package, such as the author, description, and supported Python versions. This information helps users understand what the package does and who maintains it.
 - **Distribution**: If the package is distributed, `setup.py` is used to create distribution files that can be uploaded to PyPI. This makes it easy for users to find and install the package.
-- **Customization**: Advanced users can customize the installation process by modifying the `setup.py` file, although this is less common for typical end users. 
+- **Customization**: Advanced users can customize the installation process by modifying the `setup.py` file, although this is less common for typical end users.
