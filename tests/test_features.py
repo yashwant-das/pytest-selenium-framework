@@ -13,7 +13,7 @@ def test_browser_support(driver, test_data):
     assert "WebDriver" in driver.page_source, "Page should contain WebDriver text"
     assert "Documentation" in driver.page_source, "Page should contain Documentation link"
 
-def test_headless_mode(driver, request):
+def test_headless_mode(driver, request, test_data):
     """Test that headless mode is working correctly"""
     # This test will only run in headless mode
     if not request.config.getoption("--headless"):

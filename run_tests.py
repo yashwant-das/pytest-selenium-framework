@@ -12,8 +12,8 @@ import pytest
 # Configure logging
 logger = setup_logger(__name__)
 
-def setup_directories() -> None:
-    """Create necessary directories if they don't exist.
+def setup_directories(clean=False) -> None:
+    """Create necessary directories if they don't exist and optionally clean temporary files.
     
     This function creates the following directories if they don't exist:
     - logs: For storing log files
@@ -21,7 +21,13 @@ def setup_directories() -> None:
     - reports/html: For storing HTML test reports
     - reports/screenshots: For storing test failure screenshots
     - reports/allure-results: For storing Allure test results
+    
+    Args:
+        clean (bool): If True, cleans up temporary files and previous test results.
     """
+    import shutil
+    import glob
+    
     directories = [
         'logs',
         'reports',
@@ -30,6 +36,45 @@ def setup_directories() -> None:
         'reports/allure-results'
     ]
     
+    # Clean up previous results and temporary files if requested
+    if clean:
+        logger.info("Cleaning up previous test results and temporary files...")
+        
+        # Clean allure results
+        if os.path.exists('reports/allure-results'):
+            shutil.rmtree('reports/allure-results')
+            logger.info("Cleaned allure-results directory")
+        
+        # Clean allure report
+        if os.path.exists('reports/allure-report'):
+            shutil.rmtree('reports/allure-report')
+            logger.info("Cleaned allure-report directory")
+        
+        # Clean screenshots
+        if os.path.exists('reports/screenshots'):
+            for screenshot in glob.glob('reports/screenshots/*.png'):
+                os.remove(screenshot)
+            for error_file in glob.glob('reports/screenshots/*.txt'):
+                os.remove(error_file)
+            logger.info("Cleaned screenshots directory")
+        
+        # Clean pytest cache
+        if os.path.exists('.pytest_cache'):
+            shutil.rmtree('.pytest_cache')
+            logger.info("Cleaned pytest cache")
+        
+        # Clean __pycache__ directories
+        for root, dirs, files in os.walk('.'):
+            for dir_name in dirs[:]:
+                if dir_name == '__pycache__':
+                    pycache_path = os.path.join(root, dir_name)
+                    shutil.rmtree(pycache_path)
+                    dirs.remove(dir_name)
+        logger.info("Cleaned __pycache__ directories")
+    else:
+        logger.info("Skipping cleanup (use --clean to enable)")
+    
+    # Create necessary directories
     for directory in directories:
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -59,10 +104,6 @@ def run_system_check() -> bool:
 
 def run_tests(test_path, browser=None, headless=False, parallel=None, env=None):
     """Run the tests with the specified parameters"""
-    # Run system check first
-    if not run_system_check():
-        return False
-    
     # Build pytest command
     pytest_args = []
     
@@ -90,7 +131,7 @@ def run_tests(test_path, browser=None, headless=False, parallel=None, env=None):
         num_workers = int(parallel)
         pytest_args.extend([
             f"-n={num_workers}",
-            "--dist=loadfile",
+            "--dist=worksteal",
             "--tb=short"
         ])
         logger.info(f"Running tests in parallel with {num_workers} workers")
@@ -119,13 +160,14 @@ def main() -> int:
     parser.add_argument("--headless", action="store_true", help="Run tests in headless mode")
     parser.add_argument("--skip-system-check", action="store_true", help="Skip system check")
     parser.add_argument("--parallel", type=int, help="Number of parallel workers for test execution")
+    parser.add_argument("--clean", action="store_true", help="Clean previous test results and temporary files before running")
     args = parser.parse_args()
 
     # Use --test-path if provided, otherwise default to 'tests'
     test_path = args.test_path if args.test_path else "tests"
 
-    # Setup directories
-    setup_directories()
+    # Setup directories (with optional cleanup)
+    setup_directories(clean=args.clean)
 
     # Run system check unless skipped
     if not args.skip_system_check:

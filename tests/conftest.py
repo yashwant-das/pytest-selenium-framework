@@ -1,4 +1,5 @@
 import pytest
+import allure
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -244,9 +245,17 @@ def pytest_runtest_makereport(item, call):
                     # Take the screenshot
                     driver.save_screenshot(screenshot_path)
                     
-                    # Add screenshot to the report
+                    # Add screenshot to HTML report
                     if hasattr(report, "extras"):
                         report.extras.append(pytest.html.extras.image(screenshot_path))
+                    
+                    # Add screenshot to Allure report
+                    with open(screenshot_path, "rb") as screenshot_file:
+                        allure.attach(
+                            screenshot_file.read(),
+                            name=f"Screenshot - {test_name}",
+                            attachment_type=allure.attachment_type.PNG
+                        )
                     
                     # Log the screenshot
                     logger.info(f"Screenshot saved for failed test: {screenshot_path}")
@@ -258,6 +267,14 @@ def pytest_runtest_makereport(item, call):
                         error_path = os.path.join("reports", "screenshots", error_filename)
                         with open(error_path, "w") as f:
                             f.write(error_msg)
+                        
+                        # Attach error log to Allure
+                        allure.attach(
+                            error_msg,
+                            name=f"Error Log - {test_name}",
+                            attachment_type=allure.attachment_type.TEXT
+                        )
+                        
                         logger.info(f"Error details saved: {error_path}")
                 
                 except Exception as e:
@@ -275,9 +292,17 @@ def pytest_runtest_makereport(item, call):
                             # Take the screenshot
                             driver.save_screenshot(screenshot_path)
                             
-                            # Add screenshot to the report
+                            # Add screenshot to HTML report
                             if hasattr(report, "extras"):
                                 report.extras.append(pytest.html.extras.image(screenshot_path))
+                            
+                            # Add screenshot to Allure report
+                            with open(screenshot_path, "rb") as screenshot_file:
+                                allure.attach(
+                                    screenshot_file.read(),
+                                    name=f"Screenshot - {test_name} (Passed)",
+                                    attachment_type=allure.attachment_type.PNG
+                                )
                             
                             # Log the screenshot
                             logger.info(f"Screenshot saved for passed test: {screenshot_path}")
