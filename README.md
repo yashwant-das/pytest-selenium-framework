@@ -42,7 +42,8 @@ pytest-selenium-framework/
 │   ├── conftest.py          # Pytest configuration and fixtures
 │   ├── test_selenium.py     # Basic Selenium website tests
 │   ├── test_features.py     # Advanced feature tests
-│   └── test_parallel.py     # Parallel execution tests
+│   ├── test_parallel.py     # Parallel execution tests
+│   └── test_webdriver_support.py # Comprehensive WebDriver capability tests
 ├── utilities/               # Utility classes
 │   ├── __init__.py          # Package initialization
 │   ├── logger.py            # Logging configuration
@@ -301,6 +302,94 @@ python run_tests.py --browser edge --test-path tests/test_parallel.py
 - Sequential execution: ~20 seconds for 7 tests
 - Parallel execution (4 workers): ~10 seconds for 7 tests (50% faster)
 - Headless mode: Additional 20-30% performance improvement
+
+### WebDriver Support Validation
+
+The framework includes a comprehensive WebDriver capability test suite (`test_webdriver_support.py`) that validates all WebDriver functionality to ensure your testing environment is robust and reliable.
+
+#### Test Coverage
+
+The WebDriver support tests cover **35 test cases** across **8 major categories**:
+
+**Core WebDriver Capabilities:**
+
+- Driver initialization and session management
+- Browser and platform detection
+- Version compatibility validation
+
+**Navigation & Interaction:**
+
+- Page navigation (get, back, forward)
+- Element finding strategies (by tag, class, ID, etc.)
+- Element interaction (click, text access, form input)
+- Link clicking and navigation validation
+
+**Advanced Features:**
+
+- JavaScript execution and interaction
+- Window management (size, position, maximize)
+- Cookie operations (add, get, delete)
+- Screenshot capabilities (page and element-level)
+
+**Waiting Mechanisms:**
+
+- Implicit wait configuration
+- Explicit wait with WebDriverWait
+- Element state waiting (clickable, visible, present)
+
+**Error Handling:**
+
+- Exception handling validation
+- Timeout management
+- Invalid selector handling
+
+**Performance & Integration:**
+
+- Page load timing measurement
+- Element finding performance
+- Framework integration validation
+
+#### WebDriver Test Usage
+
+```bash
+# Run WebDriver capability validation
+python run_tests.py --test-path tests/test_webdriver_support.py
+
+# Cross-browser WebDriver validation
+python run_tests.py --test-path tests/test_webdriver_support.py --browser chrome
+python run_tests.py --test-path tests/test_webdriver_support.py --browser firefox
+python run_tests.py --test-path tests/test_webdriver_support.py --browser edge
+
+# Quick WebDriver health check (headless mode)
+python run_tests.py --test-path tests/test_webdriver_support.py --headless
+
+# Performance-focused WebDriver validation
+python run_tests.py --test-path tests/test_webdriver_support.py::TestPerformanceCapabilities
+```
+
+#### When to Run WebDriver Support Tests
+
+**Recommended scenarios:**
+
+- **Environment Setup**: When setting up new testing environments
+- **Browser Updates**: After browser or driver updates
+- **Troubleshooting**: When debugging WebDriver-related issues
+- **CI/CD Validation**: As part of environment health checks
+- **Framework Validation**: Before important test campaigns
+
+**Sample Output:**
+
+```bash
+===== 35 passed in 66.40s =====
+TestWebDriverCapabilities: ✓ All 4 tests passed
+TestNavigationCapabilities: ✓ All 4 tests passed  
+TestElementInteraction: ✓ All 4 tests passed
+TestJavaScriptExecution: ✓ All 3 tests passed
+TestWindowManagement: ✓ All 3 tests passed
+TestErrorHandling: ✓ All 3 tests passed
+```
+
+This comprehensive validation ensures your WebDriver setup is production-ready and can handle all required automation scenarios.
 
 ## Page Object Model
 
