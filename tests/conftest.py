@@ -72,7 +72,24 @@ def driver(request, test_data):
         # Log all Chrome options for debugging
         logger.info(f"Chrome options: {options.arguments}")
         
-        service = Service(ChromeDriverManager().install())
+        # Get ChromeDriver path and ensure we have the actual executable
+        driver_path = ChromeDriverManager().install()
+        if os.path.isdir(driver_path):
+            # If it's a directory, look for chromedriver inside
+            actual_driver_path = os.path.join(driver_path, "chromedriver")
+        elif os.path.basename(driver_path) == "chromedriver":
+            # If the filename is exactly "chromedriver"
+            actual_driver_path = driver_path
+        else:
+            # The path might be pointing to another file in the driver directory
+            driver_dir = os.path.dirname(driver_path)
+            actual_driver_path = os.path.join(driver_dir, "chromedriver")
+        
+        # Ensure the driver is executable
+        if os.path.exists(actual_driver_path) and not os.access(actual_driver_path, os.X_OK):
+            os.chmod(actual_driver_path, 0o755)
+        
+        service = Service(actual_driver_path)
         driver = webdriver.Chrome(service=service, options=options)
     
     elif browser == "firefox":
@@ -116,7 +133,25 @@ def driver(request, test_data):
             options.add_argument(arg)
         from selenium.webdriver.edge.service import Service as EdgeService
         from webdriver_manager.microsoft import EdgeChromiumDriverManager
-        service = EdgeService(EdgeChromiumDriverManager().install())
+        
+        # Get EdgeDriver path and ensure we have the actual executable
+        driver_path = EdgeChromiumDriverManager().install()
+        if os.path.isdir(driver_path):
+            # If it's a directory, look for msedgedriver inside
+            actual_driver_path = os.path.join(driver_path, "msedgedriver")
+        elif os.path.basename(driver_path) == "msedgedriver":
+            # If the filename is exactly "msedgedriver"
+            actual_driver_path = driver_path
+        else:
+            # The path might be pointing to another file in the driver directory
+            driver_dir = os.path.dirname(driver_path)
+            actual_driver_path = os.path.join(driver_dir, "msedgedriver")
+        
+        # Ensure the driver is executable
+        if os.path.exists(actual_driver_path) and not os.access(actual_driver_path, os.X_OK):
+            os.chmod(actual_driver_path, 0o755)
+        
+        service = EdgeService(actual_driver_path)
         driver = webdriver.Edge(service=service, options=options)
     
     else:

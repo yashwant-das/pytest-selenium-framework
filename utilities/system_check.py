@@ -123,16 +123,57 @@ class SystemCheck:
         self.logger.info("Checking ChromeDriver...")
         
         try:
-            # Just check if ChromeDriver can be downloaded without initializing it
+            # Get ChromeDriver and check version
             driver_path = ChromeDriverManager().install()
-            if os.path.exists(driver_path):
-                self.logger.info("✅ ChromeDriver is available.")
+            
+            # Ensure we have the actual chromedriver executable, not a text file
+            if os.path.isdir(driver_path):
+                # If it's a directory, look for chromedriver inside
+                actual_driver_path = os.path.join(driver_path, "chromedriver")
+            elif os.path.basename(driver_path) == "chromedriver":
+                # If the filename is exactly "chromedriver"
+                actual_driver_path = driver_path
             else:
-                self.logger.error("❌ ChromeDriver is not available.")
+                # The path might be pointing to another file in the driver directory
+                driver_dir = os.path.dirname(driver_path)
+                actual_driver_path = os.path.join(driver_dir, "chromedriver")
+            
+            if os.path.exists(actual_driver_path):
+                # Ensure the driver is executable
+                if not os.access(actual_driver_path, os.X_OK):
+                    os.chmod(actual_driver_path, 0o755)
+                    self.logger.info(f"✅ Fixed permissions for ChromeDriver at {actual_driver_path}")
+                
+                # Try to get ChromeDriver version
+                try:
+                    result = subprocess.run([actual_driver_path, "--version"], capture_output=True, text=True, check=True)
+                    version_info = result.stdout.strip().split()[1] if result.stdout else "unknown"
+                    self.logger.info(f"✅ ChromeDriver version {version_info} is available.")
+                    
+                    # Test ChromeDriver functionality
+                    from selenium.webdriver.chrome.service import Service as ChromeService
+                    service = ChromeService(actual_driver_path)
+                    options = webdriver.ChromeOptions()
+                    options.add_argument("--headless")
+                    options.add_argument("--no-sandbox")
+                    options.add_argument("--disable-dev-shm-usage")
+                    
+                    driver = webdriver.Chrome(service=service, options=options)
+                    driver.quit()
+                    self.logger.info("✅ ChromeDriver is working correctly.")
+                    
+                except Exception as test_error:
+                    self.logger.error(f"❌ ChromeDriver failed to initialize: {str(test_error)}")
+                    self.logger.error("❌ Chrome browser may not be installed or ChromeDriver is incompatible.")
+                    self.checks_passed = False
+                    self.has_errors = True
+            else:
+                self.logger.error("❌ ChromeDriver executable not found or not executable.")
                 self.checks_passed = False
                 self.has_errors = True
         except Exception as e:
-            self.logger.error(f"❌ Failed to verify ChromeDriver: {str(e)}")
+            self.logger.error(f"❌ Error checking ChromeDriver: {str(e)}")
+            self.logger.warning("⚠️ ChromeDriver is not available. Chrome tests will fail.")
             self.checks_passed = False
             self.has_errors = True
     
@@ -174,32 +215,67 @@ class SystemCheck:
         self.logger.info("Checking GeckoDriver...")
         
         try:
-            # Try to get the latest GeckoDriver version from GitHub
-            response = requests.get("https://api.github.com/repos/mozilla/geckodriver/releases/latest")
-            if response.status_code == 200:
-                latest_version = response.json()["tag_name"]
-                self.logger.info(f"✅ Latest GeckoDriver version is {latest_version}")
-            else:
-                # If we hit rate limit or other GitHub API issues, just log a warning
-                self.logger.warning(f"⚠️ Could not verify latest GeckoDriver version: {response.status_code}")
-                self.logger.warning("⚠️ This is likely due to GitHub API rate limiting. Tests will continue.")
-                self.logger.warning("⚠️ Please ensure you have a compatible GeckoDriver installed.")
-                self.has_warnings = True
+            # First, try to check if geckodriver is in PATH and get version
+            try:
+                result = subprocess.run(["geckodriver", "--version"], capture_output=True, text=True, check=True)
+                version_line = result.stdout.strip().split('\n')[0] if result.stdout else ""
+                version_info = version_line.split()[1] if len(version_line.split()) > 1 else "unknown"
+                self.logger.info(f"✅ GeckoDriver version {version_info} is available.")
+                
+                # Test GeckoDriver functionality
+                from selenium.webdriver.firefox.service import Service as FirefoxService
+                service = FirefoxService()
+                options = webdriver.FirefoxOptions()
+                options.add_argument("--headless")
+                
+                driver = webdriver.Firefox(service=service, options=options)
+                driver.quit()
+                self.logger.info("✅ GeckoDriver is working correctly.")
+                return True
+                
+            except (subprocess.SubprocessError, FileNotFoundError):
+                self.logger.warning("⚠️ GeckoDriver not found in PATH, trying webdriver-manager...")
+                
+                # Fall back to webdriver-manager
+                from selenium.webdriver.firefox.service import Service as FirefoxService
+                from webdriver_manager.firefox import GeckoDriverManager
+                
+                driver_path = GeckoDriverManager().install()
+                if os.path.exists(driver_path):
+                    # Get version from downloaded driver
+                    try:
+                        result = subprocess.run([driver_path, "--version"], capture_output=True, text=True, check=True)
+                        version_line = result.stdout.strip().split('\n')[0] if result.stdout else ""
+                        version_info = version_line.split()[1] if len(version_line.split()) > 1 else "unknown"
+                        self.logger.info(f"✅ GeckoDriver version {version_info} is available.")
+                        
+                        # Test functionality
+                        service = FirefoxService(driver_path)
+                        options = webdriver.FirefoxOptions()
+                        options.add_argument("--headless")
+                        
+                        driver = webdriver.Firefox(service=service, options=options)
+                        driver.quit()
+                        self.logger.info("✅ GeckoDriver is working correctly.")
+                        return True
+                        
+                    except Exception as test_error:
+                        self.logger.error(f"❌ GeckoDriver failed to initialize: {str(test_error)}")
+                        self.logger.error("❌ Firefox browser may not be installed or GeckoDriver is incompatible.")
+                        self.checks_passed = False
+                        self.has_errors = True
+                        return False
+                else:
+                    self.logger.error("❌ GeckoDriver could not be downloaded or installed.")
+                    self.checks_passed = False
+                    self.has_errors = True
+                    return False
+                    
         except Exception as e:
-            # Log as warning instead of error
-            self.logger.warning(f"⚠️ Could not verify GeckoDriver: {str(e)}")
-            self.logger.warning("⚠️ This is likely due to GitHub API rate limiting. Tests will continue.")
-            self.logger.warning("⚠️ Please ensure you have a compatible GeckoDriver installed.")
-            self.has_warnings = True
-        
-        # Check if geckodriver is in PATH
-        try:
-            subprocess.run(["geckodriver", "--version"], capture_output=True, check=True)
-            self.logger.info("✅ GeckoDriver is available in PATH")
-            return True
-        except (subprocess.SubprocessError, FileNotFoundError):
-            self.logger.warning("⚠️ GeckoDriver not found in PATH")
-            self.logger.warning("⚠️ Tests will continue, but Firefox tests may fail")
+            self.logger.error(f"❌ Error checking GeckoDriver: {str(e)}")
+            self.logger.warning("⚠️ GeckoDriver is not available. Firefox tests will fail.")
+            self.checks_passed = False
+            self.has_errors = True
             return False
     
     def check_edge_browser(self):
@@ -232,39 +308,63 @@ class SystemCheck:
         self.logger.info("Checking EdgeDriver...")
         
         try:
-            import platform
-            import os
+            # Use webdriver-manager to get/download EdgeDriver
+            from selenium.webdriver.edge.service import Service as EdgeService
+            from webdriver_manager.microsoft import EdgeChromiumDriverManager
             
-            # Check if running on Apple Silicon
-            is_apple_silicon = platform.system() == "Darwin" and platform.machine() == "arm64"
+            driver_path = EdgeChromiumDriverManager().install()
             
-            if is_apple_silicon:
-                # For Apple Silicon, we'll use a different approach
-                # Instead of checking for the driver, we'll check if Edge browser is installed
-                edge_path = "/Applications/Microsoft Edge.app"
-                if os.path.exists(edge_path):
-                    self.logger.info("✅ Edge browser is installed. Will use Edge browser directly.")
-                    return
-                else:
-                    self.logger.warning("⚠️ Edge browser is not installed. Will fall back to Chrome browser.")
-                    self.checks_passed = False
-                    self.has_warnings = True
-                    return  # Return without setting checks_passed to False
+            # Ensure we have the actual msedgedriver executable
+            if os.path.isdir(driver_path):
+                # If it's a directory, look for msedgedriver inside
+                actual_driver_path = os.path.join(driver_path, "msedgedriver")
+            elif os.path.basename(driver_path) == "msedgedriver":
+                # If the filename is exactly "msedgedriver"
+                actual_driver_path = driver_path
             else:
-                # For other platforms, use the webdriver-manager
-                from webdriver_manager.microsoft import EdgeChromiumDriverManager
-                driver_path = EdgeChromiumDriverManager().install()
+                # The path might be pointing to another file in the driver directory
+                driver_dir = os.path.dirname(driver_path)
+                actual_driver_path = os.path.join(driver_dir, "msedgedriver")
+            
+            if os.path.exists(actual_driver_path):
+                # Ensure the driver is executable
+                if not os.access(actual_driver_path, os.X_OK):
+                    os.chmod(actual_driver_path, 0o755)
+                    self.logger.info(f"✅ Fixed permissions for EdgeDriver at {actual_driver_path}")
                 
-                if os.path.exists(driver_path):
-                    self.logger.info("✅ EdgeDriver is available.")
+                # Get EdgeDriver version
+                try:
+                    result = subprocess.run([actual_driver_path, "--version"], capture_output=True, text=True, check=True)
+                    version_info = result.stdout.strip().split()[3] if result.stdout else "unknown"  # EdgeDriver format is different
+                    self.logger.info(f"✅ EdgeDriver version {version_info} is available.")
+                    
+                    # Test EdgeDriver functionality
+                    service = EdgeService(actual_driver_path)
+                    options = webdriver.EdgeOptions()
+                    options.add_argument("--headless")
+                    options.add_argument("--no-sandbox")
+                    options.add_argument("--disable-dev-shm-usage")
+                    
+                    driver = webdriver.Edge(service=service, options=options)
+                    driver.quit()
+                    self.logger.info("✅ EdgeDriver is working correctly.")
                     return
-                else:
-                    self.logger.warning("⚠️ EdgeDriver is not available. Please install EdgeDriver.")
+                    
+                except Exception as driver_error:
+                    self.logger.error(f"❌ EdgeDriver failed to initialize: {str(driver_error)}")
+                    self.logger.error("❌ Edge browser may not be installed or EdgeDriver is incompatible.")
                     self.checks_passed = False
-                    self.has_warnings = True
+                    self.has_errors = True
                     return
+            else:
+                self.logger.error("❌ EdgeDriver executable not found or not executable.")
+                self.checks_passed = False
+                self.has_errors = True
+                return
+                
         except Exception as e:
             self.logger.error(f"❌ Error checking EdgeDriver: {str(e)}")
+            self.logger.warning("⚠️ EdgeDriver is not available. Edge tests will fail.")
             self.checks_passed = False
             self.has_errors = True
     
