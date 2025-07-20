@@ -57,7 +57,7 @@ def run_system_check() -> bool:
         logger.error("System check failed. Please fix the issues before running tests.")
         return False
 
-def run_tests(test_path, browser=None, parallel=None, env=None):
+def run_tests(test_path, browser=None, headless=False, parallel=None, env=None):
     """Run the tests with the specified parameters"""
     # Run system check first
     if not run_system_check():
@@ -66,6 +66,9 @@ def run_tests(test_path, browser=None, parallel=None, env=None):
     # Build pytest command
     pytest_args = []
     
+    # Add -s flag to show print statements and stdout
+    pytest_args.append("-s")
+    
     # Add test path
     if test_path:
         pytest_args.append(test_path)
@@ -73,6 +76,10 @@ def run_tests(test_path, browser=None, parallel=None, env=None):
     # Add browser option if specified
     if browser:
         pytest_args.extend(["--browser", browser])
+    
+    # Add headless option if specified
+    if headless:
+        pytest_args.append("--headless")
     
     # Add environment option if specified
     if env:
@@ -126,7 +133,7 @@ def main() -> int:
             return 1
 
     # Run tests
-    success = run_tests(test_path, args.browser, args.parallel)
+    success = run_tests(test_path, args.browser, args.headless, args.parallel)
 
     return 0 if success else 1
 

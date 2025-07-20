@@ -46,6 +46,9 @@ def driver(request, test_data):
     browser = request.config.getoption("--browser", default="chrome")
     headless = request.config.getoption("--headless", default=False)
     
+    # Debug logging to check what flags are being passed
+    logger.info(f"Browser: {browser}, Headless: {headless}")
+    
     # Get browser-specific configuration
     browser_config = test_data["browser_config"].get(browser, {})
     
@@ -53,11 +56,22 @@ def driver(request, test_data):
     if browser == "chrome":
         options = webdriver.ChromeOptions()
         if headless:
-            options.add_argument("--headless")
+            options.add_argument("--headless=new")  # Use new headless mode for Chrome >= 109
+            logger.info("Chrome running in headless mode with --headless=new")
+        else:
+            logger.info("Chrome running in normal (non-headless) mode")
+        # Collect all preferences into a single dict
+        prefs = {}
+        for pref in browser_config.get("preferences", {}).items():
+            prefs[pref[0]] = pref[1]
+        if prefs:
+            options.add_experimental_option("prefs", prefs)
         for arg in browser_config.get("arguments", []):
             options.add_argument(arg)
-        for pref in browser_config.get("preferences", {}).items():
-            options.add_experimental_option("prefs", {pref[0]: pref[1]})
+        
+        # Log all Chrome options for debugging
+        logger.info(f"Chrome options: {options.arguments}")
+        
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
     
@@ -92,10 +106,14 @@ def driver(request, test_data):
         options = webdriver.EdgeOptions()
         if headless:
             options.add_argument("--headless")
+        # Collect all preferences into a single dict
+        prefs = {}
+        for pref in browser_config.get("preferences", {}).items():
+            prefs[pref[0]] = pref[1]
+        if prefs:
+            options.add_experimental_option("prefs", prefs)
         for arg in browser_config.get("arguments", []):
             options.add_argument(arg)
-        for pref in browser_config.get("preferences", {}).items():
-            options.add_experimental_option("prefs", {pref[0]: pref[1]})
         from selenium.webdriver.edge.service import Service as EdgeService
         from webdriver_manager.microsoft import EdgeChromiumDriverManager
         service = EdgeService(EdgeChromiumDriverManager().install())
@@ -258,4 +276,4 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers",
         "screenshot_on_pass: mark test to take screenshot on pass"
-    ) 
+    )
