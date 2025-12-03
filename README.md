@@ -20,6 +20,9 @@
 
 </div>
 
+<img width="3000" height="1002" alt="image" src="https://github.com/user-attachments/assets/3ca75c3c-7d58-4b7b-9cbc-a463d5726924" />
+
+
 ---
 
 A robust and maintainable **Python test automation framework** built with **pytest** and **Selenium WebDriver**. This framework follows the
