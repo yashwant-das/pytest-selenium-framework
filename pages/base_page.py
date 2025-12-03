@@ -1,17 +1,19 @@
 """Base page class with common methods for all page objects."""
-from typing import List, Optional
-from selenium import webdriver
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from utilities.screenshot_helper import ScreenshotHelper
 import logging
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from typing import List, Optional
+
+from utilities.screenshot_helper import ScreenshotHelper
+
 
 class BasePage:
     """Base page class providing common functionality for all page objects."""
-    
+
     def __init__(self, driver: webdriver.Remote):
         """Initialize base page.
         
@@ -219,4 +221,4 @@ class BasePage:
         except TimeoutException:
             self.logger.error(f"Element did not disappear: {by}={value}")
             self.screenshot_helper.take_screenshot(f"element_did_not_disappear_{value}")
-            raise 
+            raise

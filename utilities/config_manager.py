@@ -1,8 +1,9 @@
 """Configuration manager for loading and caching all framework configurations."""
-import os
 import json
 import logging
+import os
 from typing import Dict, Any, Optional
+
 from utilities.exceptions import ConfigLoadError
 
 logger = logging.getLogger(__name__)
@@ -10,16 +11,16 @@ logger = logging.getLogger(__name__)
 
 class ConfigManager:
     """Singleton configuration manager that loads and caches all configuration files."""
-    
+
     _instance: Optional['ConfigManager'] = None
     _initialized: bool = False
-    
+
     def __new__(cls):
         """Create singleton instance."""
         if cls._instance is None:
             cls._instance = super(ConfigManager, cls).__new__(cls)
         return cls._instance
-    
+
     def __init__(self):
         """Initialize configuration manager and load all configs.
         
@@ -35,7 +36,7 @@ class ConfigManager:
             self._load_all_configs()
             ConfigManager._initialized = True
             logger.debug("ConfigManager initialized and all configurations loaded")
-    
+
     def _load_config_file(self, file_path: str, description: str) -> Dict[str, Any]:
         """Load a JSON configuration file.
         
@@ -66,24 +67,24 @@ class ConfigManager:
             error_msg = f"Error loading {file_path}: {e}"
             logger.error(error_msg)
             raise ConfigLoadError(error_msg) from e
-    
+
     def _load_all_configs(self) -> None:
         """Load all configuration files."""
         # Load main config.json
         config_path = os.path.join(self._base_dir, "config", "config.json")
         self._config = self._load_config_file(config_path, "main configuration")
-        
+
         # Extract browser config from main config
         self._browser_config = self._config.get("browser", {})
-        
+
         # Load environment configuration
         env_config_path = os.path.join(self._base_dir, "config", "environments.json")
         self._env_config = self._load_config_file(env_config_path, "environment configuration")
-        
+
         # Load test data
         test_data_path = os.path.join(self._base_dir, "data", "fixtures.json")
         self._test_data = self._load_config_file(test_data_path, "test data")
-    
+
     def get_config(self) -> Dict[str, Any]:
         """Get main configuration.
         
@@ -91,7 +92,7 @@ class ConfigManager:
             dict: Main configuration from config.json
         """
         return self._config
-    
+
     def get_browser_config(self, browser: Optional[str] = None) -> Dict[str, Any]:
         """Get browser-specific configuration.
         
@@ -110,8 +111,9 @@ class ConfigManager:
             # Get browser-specific config, merge with defaults
             browser_specific = self._browser_config.get(browser, {})
             if not browser_specific and browser not in ['chrome', 'firefox']:
-                logger.warning(f"Browser '{browser}' not found in configuration. Available browsers: {list(self._browser_config.keys())}")
-            
+                logger.warning(
+                    f"Browser '{browser}' not found in configuration. Available browsers: {list(self._browser_config.keys())}")
+
             # Merge with default browser settings
             default_config = {
                 "implicit_wait": self._browser_config.get("implicit_wait", 10),
@@ -122,7 +124,7 @@ class ConfigManager:
             default_config.update(browser_specific)
             return default_config
         return self._browser_config
-    
+
     def get_env_config(self, env: Optional[str] = None) -> Dict[str, Any]:
         """Get environment configuration.
         
@@ -142,14 +144,15 @@ class ConfigManager:
             envs = self._env_config.get("environments", {})
             env_config = envs.get(env, {})
             if not env_config:
-                logger.warning(f"Environment '{env}' not found in configuration. Available environments: {list(envs.keys())}")
+                logger.warning(
+                    f"Environment '{env}' not found in configuration. Available environments: {list(envs.keys())}")
             return env_config
         # Return default environment
         default_config = self._env_config.get("default", {})
         if not default_config:
             logger.warning("Default environment configuration not found")
         return default_config
-    
+
     def get_test_data(self) -> Dict[str, Any]:
         """Get test data.
         
@@ -157,7 +160,7 @@ class ConfigManager:
             dict: Test data from fixtures.json
         """
         return self._test_data
-    
+
     def get_all_configs(self) -> Dict[str, Any]:
         """Get all configurations in a single dict.
         
@@ -175,4 +178,3 @@ class ConfigManager:
             "env_config": self._env_config,
             "browser_config": self._browser_config
         }
-

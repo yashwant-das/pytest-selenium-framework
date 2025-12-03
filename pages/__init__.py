@@ -1,1 +1,1 @@
-"""Page Object Model classes for the Selenium test framework.""" 
+"""Page Object Model classes for the Selenium test framework."""

@@ -1,1 +1,1 @@
-"""Utility classes and helpers for the Selenium test framework.""" 
+"""Utility classes and helpers for the Selenium test framework."""

@@ -4,17 +4,17 @@ This module provides a centralized class for taking screenshots and attaching
 them to test reports (Allure and HTML). It handles screenshot naming, directory
 creation, and report integration.
 """
-import os
-import logging
-from datetime import datetime
-from typing import Optional, Union, Any
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 import allure
+import logging
+import os
 import pytest
+from datetime import datetime
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+from typing import Optional, Union, Any
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ __all__ = ['ScreenshotHelper']
 
 class ScreenshotHelper:
     """Helper class for taking screenshots and attaching them to test reports."""
-    
+
     def __init__(self, driver: webdriver.Remote):
         """Initialize screenshot helper.
         
@@ -34,7 +34,7 @@ class ScreenshotHelper:
         # Get project root directory (parent of utilities directory)
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.screenshot_dir = os.path.join(project_root, "reports", "screenshots")
-        
+
         # Create screenshot directory if it doesn't exist
         try:
             os.makedirs(self.screenshot_dir, exist_ok=True)
@@ -56,7 +56,7 @@ class ScreenshotHelper:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{name}_{timestamp}.png" if name else f"screenshot_{timestamp}.png"
         filepath = os.path.join(self.screenshot_dir, filename)
-        
+
         try:
             self.driver.save_screenshot(filepath)
             logger.debug(f"Screenshot saved: {filepath}")
@@ -65,7 +65,7 @@ class ScreenshotHelper:
             logger.error(f"Failed to save screenshot: {e}")
             raise
 
-    def wait_and_take_screenshot(self, by: By, value: str, timeout: int = 10, 
+    def wait_and_take_screenshot(self, by: By, value: str, timeout: int = 10,
                                  name: Optional[str] = None) -> str:
         """Wait for an element to be visible and take a screenshot.
         
@@ -86,9 +86,9 @@ class ScreenshotHelper:
         except TimeoutException:
             logger.debug(f"Element not visible after {timeout}s, taking timeout screenshot")
             return self.take_screenshot(f"{name}_timeout" if name else "timeout")
-    
-    def take_failure_screenshot(self, test_name: str, 
-                               error_msg: Optional[str] = None) -> str:
+
+    def take_failure_screenshot(self, test_name: str,
+                                error_msg: Optional[str] = None) -> str:
         """Take a screenshot for a failed test and attach to reports.
         
         Args:
@@ -101,15 +101,15 @@ class ScreenshotHelper:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"failure_{test_name}_{timestamp}.png"
         screenshot_path = os.path.join(self.screenshot_dir, filename)
-        
+
         # Take screenshot
         self.driver.save_screenshot(screenshot_path)
         logger.info(f"Screenshot saved for failed test: {screenshot_path}")
-        
+
         # Attach to Allure report
-        self.attach_to_allure(screenshot_path, f"Screenshot - {test_name}", 
-                            allure.attachment_type.PNG)
-        
+        self.attach_to_allure(screenshot_path, f"Screenshot - {test_name}",
+                              allure.attachment_type.PNG)
+
         # Save error message if provided
         if error_msg:
             try:
@@ -117,15 +117,15 @@ class ScreenshotHelper:
                 error_path = os.path.join(self.screenshot_dir, error_filename)
                 with open(error_path, "w", encoding='utf-8') as f:
                     f.write(error_msg)
-                
+
                 self.attach_to_allure(error_msg, f"Error Log - {test_name}",
-                                    allure.attachment_type.TEXT)
+                                      allure.attachment_type.TEXT)
                 logger.info(f"Error details saved: {error_path}")
             except Exception as e:
                 logger.warning(f"Failed to save error message: {e}")
-        
+
         return screenshot_path
-    
+
     def take_pass_screenshot(self, test_name: str) -> str:
         """Take a screenshot for a passed test and attach to reports.
         
@@ -138,19 +138,19 @@ class ScreenshotHelper:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"pass_{test_name}_{timestamp}.png"
         screenshot_path = os.path.join(self.screenshot_dir, filename)
-        
+
         # Take screenshot
         self.driver.save_screenshot(screenshot_path)
         logger.info(f"Screenshot saved for passed test: {screenshot_path}")
-        
+
         # Attach to Allure report
         self.attach_to_allure(screenshot_path, f"Screenshot - {test_name} (Passed)",
-                            allure.attachment_type.PNG)
-        
+                              allure.attachment_type.PNG)
+
         return screenshot_path
-    
-    def attach_to_allure(self, content: Union[str, bytes], name: str, 
-                        attachment_type: allure.attachment_type) -> None:
+
+    def attach_to_allure(self, content: Union[str, bytes], name: str,
+                         attachment_type: allure.attachment_type) -> None:
         """Attach content to Allure report.
         
         This method can attach either file content (from a file path) or
@@ -178,7 +178,7 @@ class ScreenshotHelper:
                 logger.warning(f"Invalid content type for Allure attachment: {type(content)}")
         except Exception as e:
             logger.error(f"Failed to attach to Allure: {e}")
-    
+
     def attach_to_html_report(self, screenshot_path: str) -> Optional[Any]:
         """Attach screenshot to HTML report.
         
@@ -192,18 +192,18 @@ class ScreenshotHelper:
             if not os.path.exists(screenshot_path):
                 logger.warning(f"Screenshot file not found: {screenshot_path}")
                 return None
-                
+
             # Check if pytest-html is available
             try:
                 import pytest_html
             except ImportError:
                 logger.debug("pytest-html not available, skipping HTML report attachment")
                 return None
-            
+
             # Return the extra object for pytest-html
             html_extra = pytest_html.extras.image(screenshot_path)
             logger.debug(f"Attached screenshot to HTML report: {screenshot_path}")
             return html_extra
         except Exception as e:
             logger.error(f"Failed to attach to HTML report: {e}")
-            return None 
+            return None

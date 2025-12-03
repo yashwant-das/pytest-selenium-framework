@@ -1,19 +1,22 @@
 {
-    "browser": {
-        "default": "chrome",
-        "headless": false,
-        "implicit_wait": 10,
-        "window_size": {
-            "width": 1920,
-            "height": 1080
-        },
-        "chrome": {
-            "arguments": ["--no-sandbox", "--disable-dev-shm-usage"],
-            "preferences": {}
-        },
-        "firefox": {
-            "arguments": [],
-            "preferences": {}
-        }
+  "browser": {
+    "default": "chrome",
+    "headless": false,
+    "implicit_wait": 10,
+    "window_size": {
+      "width": 1920,
+      "height": 1080
+    },
+    "chrome": {
+      "arguments": [
+        "--no-sandbox",
+        "--disable-dev-shm-usage"
+      ],
+      "preferences": {}
+    },
+    "firefox": {
+      "arguments": [],
+      "preferences": {}
     }
+  }
 }

@@ -1,13 +1,14 @@
 """Driver factory for creating WebDriver instances with unified logic."""
+import logging
 import os
 import subprocess
-import logging
-from typing import Dict, Any, Optional
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
+from typing import Dict, Any, Optional
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
+
 from utilities.exceptions import DriverInitializationError
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class DriverFactory:
     """Factory class for creating WebDriver instances with smart driver management."""
-    
+
     @staticmethod
     def _check_driver_in_path(driver_name: str) -> bool:
         """Check if driver is available in system PATH.
@@ -27,14 +28,14 @@ class DriverFactory:
             bool: True if driver is in PATH, False otherwise
         """
         try:
-            subprocess.run([driver_name, "--version"], 
-                         capture_output=True, check=True, timeout=5)
+            subprocess.run([driver_name, "--version"],
+                           capture_output=True, check=True, timeout=5)
             logger.debug(f"Found {driver_name} in system PATH")
             return True
         except (subprocess.SubprocessError, FileNotFoundError, subprocess.TimeoutExpired):
             logger.debug(f"{driver_name} not found in system PATH, will use webdriver-manager")
             return False
-    
+
     @staticmethod
     def _get_driver_path(driver_manager: Any, driver_name: str) -> str:
         """Get driver path from webdriver-manager with proper handling.
@@ -56,7 +57,7 @@ class DriverFactory:
             error_msg = f"Failed to install {driver_name} via webdriver-manager: {e}"
             logger.error(error_msg)
             raise DriverInitializationError(error_msg) from e
-        
+
         # Determine actual driver executable path
         if os.path.isdir(driver_path):
             actual_path = os.path.join(driver_path, driver_name)
@@ -65,13 +66,13 @@ class DriverFactory:
         else:
             driver_dir = os.path.dirname(driver_path)
             actual_path = os.path.join(driver_dir, driver_name)
-        
+
         # Verify driver exists
         if not os.path.exists(actual_path):
             error_msg = f"Driver executable not found at expected path: {actual_path}"
             logger.error(error_msg)
             raise DriverInitializationError(error_msg)
-        
+
         # Ensure executable permissions
         if not os.access(actual_path, os.X_OK):
             try:
@@ -79,12 +80,12 @@ class DriverFactory:
                 logger.debug(f"Set executable permissions on {actual_path}")
             except OSError as e:
                 logger.warning(f"Could not set executable permissions on {actual_path}: {e}")
-        
+
         return actual_path
-    
+
     @staticmethod
-    def create_driver(browser: str, headless: bool = False, 
-                     browser_config: Optional[Dict[str, Any]] = None) -> webdriver.Remote:
+    def create_driver(browser: str, headless: bool = False,
+                      browser_config: Optional[Dict[str, Any]] = None) -> webdriver.Remote:
         """Create and configure WebDriver instance.
         
         Args:
@@ -100,7 +101,7 @@ class DriverFactory:
             DriverInitializationError: If driver initialization fails
         """
         browser_config = browser_config or {}
-        
+
         if browser == "chrome":
             return DriverFactory._create_chrome_driver(headless, browser_config)
         elif browser == "firefox":
@@ -109,8 +110,9 @@ class DriverFactory:
         # elif browser == "edge":
         #     return DriverFactory._create_edge_driver(headless, browser_config)
         else:
-            raise ValueError(f"Unsupported browser: {browser}. Supported browsers: chrome, firefox. Edge support coming in next release.")
-    
+            raise ValueError(
+                f"Unsupported browser: {browser}. Supported browsers: chrome, firefox. Edge support coming in next release.")
+
     @staticmethod
     def _create_chrome_driver(headless: bool, config: Dict[str, Any]) -> webdriver.Chrome:
         """Create Chrome driver with configuration.
@@ -123,24 +125,24 @@ class DriverFactory:
             Chrome WebDriver instance
         """
         options = webdriver.ChromeOptions()
-        
+
         if headless:
             options.add_argument("--headless=new")
             logger.info("Chrome running in headless mode with --headless=new")
         else:
             logger.info("Chrome running in normal (non-headless) mode")
-        
+
         # Add browser arguments
         for arg in config.get("arguments", []):
             options.add_argument(arg)
-        
+
         # Add preferences
         prefs = config.get("preferences", {})
         if prefs:
             options.add_experimental_option("prefs", prefs)
-        
+
         logger.info(f"Chrome options: {options.arguments}")
-        
+
         # Try PATH first, then webdriver-manager
         try:
             if DriverFactory._check_driver_in_path("chromedriver"):
@@ -155,11 +157,11 @@ class DriverFactory:
             error_msg = f"Failed to initialize Chrome driver: {e}"
             logger.error(error_msg)
             raise DriverInitializationError(error_msg) from e
-        
+
         # Configure driver
         DriverFactory._configure_driver(driver, config)
         return driver
-    
+
     @staticmethod
     def _create_firefox_driver(headless: bool, config: Dict[str, Any]) -> webdriver.Firefox:
         """Create Firefox driver with configuration.
@@ -172,25 +174,25 @@ class DriverFactory:
             Firefox WebDriver instance
         """
         options = webdriver.FirefoxOptions()
-        
+
         if headless:
             options.add_argument("--headless")
             logger.info("Firefox running in headless mode")
         else:
             logger.info("Firefox running in normal (non-headless) mode")
-        
+
         # Add browser arguments
         for arg in config.get("arguments", []):
             options.add_argument(arg)
-        
+
         # Add preferences
         prefs = config.get("preferences", {})
         if prefs:
             for pref_key, pref_value in prefs.items():
                 options.set_preference(pref_key, pref_value)
-        
+
         logger.info(f"Firefox options: {options.arguments}")
-        
+
         # Try PATH first, then webdriver-manager
         try:
             if DriverFactory._check_driver_in_path("geckodriver"):
@@ -205,11 +207,11 @@ class DriverFactory:
             error_msg = f"Failed to initialize Firefox driver: {e}"
             logger.error(error_msg)
             raise DriverInitializationError(error_msg) from e
-        
+
         # Configure driver
         DriverFactory._configure_driver(driver, config)
         return driver
-    
+
     @staticmethod
     def _configure_driver(driver: webdriver.Remote, config: Dict[str, Any]) -> None:
         """Configure driver with window size and implicit wait.
@@ -225,7 +227,7 @@ class DriverFactory:
             height = window_size.get("height", 1080)
             driver.set_window_size(width, height)
             logger.debug(f"Set window size to {width}x{height}")
-            
+
             # Set implicit wait
             implicit_wait = config.get("implicit_wait", 10)
             driver.implicitly_wait(implicit_wait)
@@ -233,4 +235,3 @@ class DriverFactory:
         except Exception as e:
             logger.warning(f"Error configuring driver settings: {e}")
             # Don't raise - driver is still usable with defaults
-

@@ -1,6 +1,6 @@
 """Setup configuration for pytest-selenium-framework."""
-from setuptools import setup, find_packages
 from pathlib import Path
+from setuptools import setup, find_packages
 
 # Read the README file for long description
 this_directory = Path(__file__).parent
@@ -63,4 +63,4 @@ setup(
         "Documentation": "https://github.com/yashwant-das/pytest-selenium-framework#readme",
     },
     license="MIT",
-) 
+)

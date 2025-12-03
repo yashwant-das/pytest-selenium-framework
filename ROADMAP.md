@@ -27,11 +27,11 @@ The current version includes:
 - **Priority**: High
 - **Description**: Add Microsoft Edge browser support to the framework
 - **Implementation Notes**:
-  - Add Edge driver factory method in `utilities/driver_factory.py`
-  - Add Edge configuration to `config/config.json`
-  - Add Edge test case in `tests/test_framework_capabilities.py`
-  - Update documentation and examples
-  - Add Edge browser marker in `pytest.ini`
+    - Add Edge driver factory method in `utilities/driver_factory.py`
+    - Add Edge configuration to `config/config.json`
+    - Add Edge test case in `tests/test_framework_capabilities.py`
+    - Update documentation and examples
+    - Add Edge browser marker in `pytest.ini`
 
 ---
 

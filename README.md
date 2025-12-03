@@ -1,11 +1,13 @@
 # Selenium Test Automation Framework
 
-A robust and maintainable test automation framework built with Python, Selenium, and pytest. This framework follows the Page Object Model (POM) design pattern and provides a comprehensive set of utilities for web application testing.
+A robust and maintainable test automation framework built with Python, Selenium, and pytest. This framework follows the
+Page Object Model (POM) design pattern and provides a comprehensive set of utilities for web application testing.
 
 ## Features
 
 - **Page Object Model**: Organized page classes for better maintainability
-- **Cross-Browser Testing**: Support for Chrome and Firefox browsers with auto-download capabilities (Edge support planned for next release)
+- **Cross-Browser Testing**: Support for Chrome and Firefox browsers with auto-download capabilities (Edge support
+  planned for next release)
 - **Multi-Environment Support**: Built-in support for multiple environments (dev, qa, staging, prod) with easy switching
 - **Headless Mode**: Run tests without opening browser windows
 - **Parallel Execution**: Run tests in parallel with configurable worker count for faster execution
@@ -64,8 +66,8 @@ Before installing the framework, ensure you have:
 - **Python 3.8+** (check with `python --version`)
 - **pip** package manager
 - **One or more browsers installed**:
-  - Chrome/Chromium
-  - Firefox
+    - Chrome/Chromium
+    - Firefox
 
 ### Quick Setup Validation
 
@@ -113,8 +115,8 @@ If drivers aren't in PATH, the framework will automatically download them on fir
    The framework supports multiple driver installation methods:
 
    **Option A: Automatic Download (Recommended)**
-   - The framework automatically downloads drivers using webdriver-manager
-   - No manual setup required for Chrome and Firefox
+    - The framework automatically downloads drivers using webdriver-manager
+    - No manual setup required for Chrome and Firefox
 
    **Option B: Manual Installation (More Reliable)**
 
@@ -124,9 +126,9 @@ If drivers aren't in PATH, the framework will automatically download them on fir
    ```
 
    **Option C: PATH Detection**
-   - The framework first checks for drivers in your system PATH
-   - Falls back to webdriver-manager if PATH drivers not found
-   - Provides the most reliable driver resolution
+    - The framework first checks for drivers in your system PATH
+    - Falls back to webdriver-manager if PATH drivers not found
+    - Provides the most reliable driver resolution
 
 ## Usage
 
@@ -203,14 +205,14 @@ pytest tests/test_framework_capabilities.py::TestParallelExecution -n 4
 
 ### Command Line Options
 
-| Option | Description | Example |
-|--------|-------------|---------|
-| `--browser` | Browser to use (chrome, firefox) | `--browser firefox` |
-| `--headless` | Run tests in headless mode | `--headless` |
-| `-n` or `--numprocesses` | Number of parallel workers | `pytest -n 4` |
-| `-m` | Run tests matching marker | `pytest -m smoke` |
-| `-v` | Verbose output | `pytest -v` |
-| `-k` | Run tests matching expression | `pytest -k "navigation"` |
+| Option                   | Description                      | Example                  |
+|--------------------------|----------------------------------|--------------------------|
+| `--browser`              | Browser to use (chrome, firefox) | `--browser firefox`      |
+| `--headless`             | Run tests in headless mode       | `--headless`             |
+| `-n` or `--numprocesses` | Number of parallel workers       | `pytest -n 4`            |
+| `-m`                     | Run tests matching marker        | `pytest -m smoke`        |
+| `-v`                     | Verbose output                   | `pytest -v`              |
+| `-k`                     | Run tests matching expression    | `pytest -k "navigation"` |
 
 **Performance Comparison:**
 
@@ -230,6 +232,7 @@ Example:
 ```python
 from pages.base_page import BasePage
 
+
 class SeleniumPage(BasePage):
     # Page-specific locators
     LOCATORS = {
@@ -237,7 +240,7 @@ class SeleniumPage(BasePage):
         "search_input": ("id", "searchbox"),
         "search_button": ("id", "search-button")
     }
-    
+
     def search(self, query):
         """Perform a search on the page"""
         self.find_element(*self.LOCATORS["search_input"]).send_keys(query)
@@ -250,34 +253,35 @@ The framework uses a well-organized configuration structure split across multipl
 
 ### 1. Environment Configuration (`config/environments.json`)
 
-This file manages environment-specific settings and supports multiple environments. The framework provides built-in support for environment switching without code changes.
+This file manages environment-specific settings and supports multiple environments. The framework provides built-in
+support for environment switching without code changes.
 
 **Current Configuration:**
 
 ```json
 {
-    "default": {
-        "url": "https://www.selenium.dev",
-        "description": "Default environment for demo purposes"
+  "default": {
+    "url": "https://www.selenium.dev",
+    "description": "Default environment for demo purposes"
+  },
+  "environments": {
+    "dev": {
+      "url": "https://www.selenium.dev",
+      "description": "Development environment"
     },
-    "environments": {
-        "dev": {
-            "url": "https://www.selenium.dev",
-            "description": "Development environment"
-        },
-        "qa": {
-            "url": "https://www.selenium.dev",
-            "description": "QA testing environment"
-        },
-        "staging": {
-            "url": "https://www.selenium.dev",
-            "description": "Staging environment for pre-production testing"
-        },
-        "prod": {
-            "url": "https://www.selenium.dev",
-            "description": "Production environment"
-        }
+    "qa": {
+      "url": "https://www.selenium.dev",
+      "description": "QA testing environment"
+    },
+    "staging": {
+      "url": "https://www.selenium.dev",
+      "description": "Staging environment for pre-production testing"
+    },
+    "prod": {
+      "url": "https://www.selenium.dev",
+      "description": "Production environment"
     }
+  }
 }
 ```
 
@@ -287,30 +291,30 @@ Update the URLs and add any environment-specific settings:
 
 ```json
 {
-    "default": {
-        "url": "https://www.example.com",
-        "api_key": "default_key"
+  "default": {
+    "url": "https://www.example.com",
+    "api_key": "default_key"
+  },
+  "environments": {
+    "dev": {
+      "url": "https://dev.example.com",
+      "api_key": "dev_key",
+      "timeout": 30
     },
-    "environments": {
-        "dev": {
-            "url": "https://dev.example.com",
-            "api_key": "dev_key",
-            "timeout": 30
-        },
-        "qa": {
-            "url": "https://qa.example.com",
-            "api_key": "qa_key",
-            "timeout": 20
-        },
-        "staging": {
-            "url": "https://staging.example.com",
-            "api_key": "staging_key"
-        },
-        "prod": {
-            "url": "https://www.example.com",
-            "api_key": "prod_key"
-        }
+    "qa": {
+      "url": "https://qa.example.com",
+      "api_key": "qa_key",
+      "timeout": 20
+    },
+    "staging": {
+      "url": "https://staging.example.com",
+      "api_key": "staging_key"
+    },
+    "prod": {
+      "url": "https://www.example.com",
+      "api_key": "prod_key"
     }
+  }
 }
 ```
 
@@ -344,7 +348,10 @@ This file contains browser-specific settings and configuration:
       "height": 1080
     },
     "chrome": {
-      "arguments": ["--no-sandbox", "--disable-dev-shm-usage"],
+      "arguments": [
+        "--no-sandbox",
+        "--disable-dev-shm-usage"
+      ],
       "preferences": {}
     },
     "firefox": {
@@ -362,12 +369,13 @@ This file contains browser-specific settings and configuration:
 - **implicit_wait**: Default implicit wait time in seconds
 - **window_size**: Default browser window size
 - **chrome/firefox**: Browser-specific settings
-  - **arguments**: List of browser command-line arguments
-  - **preferences**: Browser preferences (Chrome) or options (Firefox)
+    - **arguments**: List of browser command-line arguments
+    - **preferences**: Browser preferences (Chrome) or options (Firefox)
 
 ### 3. Test Data (`data/fixtures.json`)
 
-This file contains test-specific data used in data-driven tests. The structure is flexible and can be customized for your application:
+This file contains test-specific data used in data-driven tests. The structure is flexible and can be customized for
+your application:
 
 ```json
 {
@@ -405,25 +413,26 @@ components = test_data["selenium"]["components"]
 ```
 
 **Customization:**
-You can add any test data structure needed for your application. The framework loads this data and makes it available through the `test_data` fixture in your tests.
+You can add any test data structure needed for your application. The framework loads this data and makes it available
+through the `test_data` fixture in your tests.
 
 ### Configuration Management
 
 The framework's configuration is organized into three main categories:
 
 1. **Framework Settings** (`config/config.json`)
-   - Browser configuration (default, headless, implicit wait)
-   - Window size settings
-   - Browser-specific arguments and preferences
+    - Browser configuration (default, headless, implicit wait)
+    - Window size settings
+    - Browser-specific arguments and preferences
 
 2. **Environment Settings** (`config/environments.json`)
-   - Environment-specific URLs
-   - Environment variables
+    - Environment-specific URLs
+    - Environment variables
 
 3. **Test Data** (`data/fixtures.json`)
-   - Test-specific data
-   - Expected values
-   - Test scenarios
+    - Test-specific data
+    - Expected values
+    - Test scenarios
 
 This separation provides several benefits:
 
@@ -443,11 +452,11 @@ Standard pytest-html reports are automatically generated:
 
 - **Location**: `reports/html/report.html`
 - **Features**:
-  - Test results summary
-  - Screenshots on failure
-  - Test execution time
-  - Environment details
-  - Browser information
+    - Test results summary
+    - Screenshots on failure
+    - Test execution time
+    - Environment details
+    - Browser information
 
 ### Allure Reports
 
@@ -491,7 +500,7 @@ Screenshots are automatically captured and attached to reports:
 
 - **On Failure**: All failed tests automatically capture screenshots
 - **Integration**: Screenshots are embedded in both HTML and Allure reports
-- **Storage**: `reports/screenshots/` with timestamps and test names  
+- **Storage**: `reports/screenshots/` with timestamps and test names
 - **Error Logs**: Detailed error information saved alongside screenshots
 
 ## Test Data
@@ -502,11 +511,20 @@ Test data is stored in JSON files in the `data` directory:
 {
   "selenium": {
     "title": "Selenium",
-    "navigation_items": ["Home", "About", "Documentation", "Support", "Blog"]
+    "navigation_items": [
+      "Home",
+      "About",
+      "Documentation",
+      "Support",
+      "Blog"
+    ]
   },
   "browser_config": {
     "chrome": {
-      "arguments": ["--no-sandbox", "--disable-dev-shm-usage"],
+      "arguments": [
+        "--no-sandbox",
+        "--disable-dev-shm-usage"
+      ],
       "preferences": {
         "download.default_directory": "./downloads"
       }
@@ -562,7 +580,8 @@ Smart driver detection and management:
 
 ### Environment Management
 
-The framework supports multiple environment configurations through `config/environments.json`. This allows you to easily switch between different environments (dev, qa, staging, prod) without changing your test code.
+The framework supports multiple environment configurations through `config/environments.json`. This allows you to easily
+switch between different environments (dev, qa, staging, prod) without changing your test code.
 
 **Example Usage:**
 
@@ -577,6 +596,7 @@ print(default_env["url"])  # https://www.selenium.dev
 # Get specific environment config
 qa_env = config_manager.get_env_config("qa")
 print(qa_env["url"])  # https://www.selenium.dev
+
 
 # Use in your page objects
 class MyPage(BasePage):

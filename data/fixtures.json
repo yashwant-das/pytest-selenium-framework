@@ -1,17 +1,17 @@
 {
-    "selenium": {
-        "navigation": {
-            "about": "About",
-            "downloads": "Downloads",
-            "documentation": "Documentation",
-            "projects": "Projects",
-            "support": "Support",
-            "blog": "Blog"
-        },
-        "components": {
-            "webdriver": "Selenium WebDriver",
-            "ide": "Selenium IDE",
-            "grid": "Selenium Grid"
-        }
+  "selenium": {
+    "navigation": {
+      "about": "About",
+      "downloads": "Downloads",
+      "documentation": "Documentation",
+      "projects": "Projects",
+      "support": "Support",
+      "blog": "Blog"
+    },
+    "components": {
+      "webdriver": "Selenium WebDriver",
+      "ide": "Selenium IDE",
+      "grid": "Selenium Grid"
     }
+  }
 } 

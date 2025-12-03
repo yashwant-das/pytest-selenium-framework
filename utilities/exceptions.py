@@ -43,4 +43,3 @@ class ConfigLoadError(Exception):
         ...     print(f"Failed to load configuration: {e}")
     """
     pass
-
