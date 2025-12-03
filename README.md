@@ -1,7 +1,51 @@
-# Selenium Test Automation Framework
+<div align="center">
 
-A robust and maintainable test automation framework built with Python, Selenium, and pytest. This framework follows the
+  <h1>🚀 pytest-Selenium Test Automation Framework</h1>
+
+  <p><strong>A robust and maintainable Python test automation framework built with pytest and Selenium WebDriver</strong></p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.8+-3776AB?logo=python&logoColor=white" alt="Python"/>
+    <img src="https://img.shields.io/badge/Selenium-4.0+-43B02A?logo=selenium&logoColor=white" alt="Selenium"/>
+    <img src="https://img.shields.io/badge/pytest-8.0+-0A9EDC?logo=pytest&logoColor=white" alt="pytest"/>
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Chrome-Supported-4285F4?logo=google-chrome&logoColor=white" alt="Chrome"/>
+    <img src="https://img.shields.io/badge/Firefox-Supported-FF7139?logo=firefox-browser&logoColor=white" alt="Firefox"/>
+    <img src="https://img.shields.io/badge/Allure-Reports-FF6A00?logo=allure&logoColor=white" alt="Allure"/>
+    <img src="https://img.shields.io/badge/Parallel-Testing-00D9FF?logo=parallel&logoColor=white" alt="Parallel Testing"/>
+  </p>
+
+</div>
+
+---
+
+A robust and maintainable **Python test automation framework** built with **pytest** and **Selenium WebDriver**. This framework follows the
 Page Object Model (POM) design pattern and provides a comprehensive set of utilities for web application testing.
+
+## 📑 Table of Contents
+
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [Examples](#examples)
+- [Page Object Model](#page-object-model)
+- [Configuration](#configuration)
+- [Reports](#reports)
+- [Logging](#logging)
+- [Advanced Features](#advanced-features)
+- [Troubleshooting](#troubleshooting)
+- [Why Selenium in 2025?](#why-selenium-in-2025)
+- [Framework Architecture](#framework-architecture)
+- [Roadmap](#roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Author](#-author)
 
 ## Features
 
@@ -25,6 +69,13 @@ pytest-selenium-framework/
 ├── config/                  # Configuration files
 │   ├── config.json          # Framework settings (browser, timeouts, reporting)
 │   └── environments.json    # Environment-specific settings (dev, qa, staging, prod)
+├── data/                    # Test data files
+│   └── fixtures.json        # Test data for data-driven tests
+├── docs/                    # Documentation assets
+│   └── screenshots/         # Allure report screenshots for documentation
+├── examples/                # Example files
+│   ├── __init__.py          # Package initialization
+│   └── environment_usage_example.py # Example demonstrating environment configuration
 ├── logs/                    # Log files (auto-generated)
 │   └── test_run_*.log       # Test execution logs with timestamps
 ├── pages/                   # Page Object Model classes
@@ -36,9 +87,8 @@ pytest-selenium-framework/
 │   ├── screenshots/         # Failure screenshots with error logs
 │   ├── allure-results/      # Allure test results (raw data)
 │   └── allure-report/       # Generated Allure HTML reports
-├── data/                    # Test data files
-│   └── fixtures.json        # Test data for data-driven tests
 ├── tests/                   # Test files
+│   ├── __init__.py          # Package initialization
 │   ├── conftest.py          # Pytest configuration and fixtures
 │   └── test_framework_capabilities.py # Comprehensive test suite showcasing all framework features
 ├── utilities/               # Utility classes
@@ -48,9 +98,6 @@ pytest-selenium-framework/
 │   ├── driver_factory.py    # WebDriver factory for unified driver creation
 │   ├── config_manager.py    # Configuration manager for loading and caching configs
 │   └── exceptions.py        # Custom exception classes
-├── examples/                # Example files
-│   ├── __init__.py          # Package initialization
-│   └── environment_usage_example.py # Example demonstrating environment configuration
 ├── requirements.txt         # Project dependencies
 ├── setup.py                 # Package setup script
 ├── pytest.ini               # Pytest configuration with Allure support
@@ -129,6 +176,27 @@ If drivers aren't in PATH, the framework will automatically download them on fir
     - The framework first checks for drivers in your system PATH
     - Falls back to webdriver-manager if PATH drivers not found
     - Provides the most reliable driver resolution
+
+## Quick Start
+
+Get up and running in minutes:
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/yashwant-das/pytest-selenium-framework.git
+cd pytest-selenium-framework
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# 2. Run your first test
+pytest tests/test_framework_capabilities.py::TestPageObjectModel::test_page_object_navigation -v
+
+# 3. View the HTML report
+open reports/html/report.html
+```
+
+That's it! The framework will automatically handle driver downloads, create necessary directories, and generate reports.
 
 ## Usage
 
@@ -219,6 +287,27 @@ pytest tests/test_framework_capabilities.py::TestParallelExecution -n 4
 - Sequential execution: ~20 seconds for 7 tests
 - Parallel execution (4 workers): ~10 seconds for 7 tests (50% faster)
 - Headless mode: Additional 20-30% performance improvement
+
+## Examples
+
+The framework includes example files to help you get started:
+
+### Environment Configuration Example
+
+See `examples/environment_usage_example.py` for a complete example demonstrating:
+
+- How to use `ConfigManager` to access environment configurations
+- Creating environment-aware page objects
+- Testing across multiple environments
+- Pytest test patterns with environment support
+
+Run the example:
+
+```bash
+python examples/environment_usage_example.py
+```
+
+This example shows practical usage patterns that you can adapt for your own test automation needs.
 
 ## Page Object Model
 
@@ -416,32 +505,6 @@ components = test_data["selenium"]["components"]
 You can add any test data structure needed for your application. The framework loads this data and makes it available
 through the `test_data` fixture in your tests.
 
-### Configuration Management
-
-The framework's configuration is organized into three main categories:
-
-1. **Framework Settings** (`config/config.json`)
-    - Browser configuration (default, headless, implicit wait)
-    - Window size settings
-    - Browser-specific arguments and preferences
-
-2. **Environment Settings** (`config/environments.json`)
-    - Environment-specific URLs
-    - Environment variables
-
-3. **Test Data** (`data/fixtures.json`)
-    - Test-specific data
-    - Expected values
-    - Test scenarios
-
-This separation provides several benefits:
-
-- Clear organization of different types of configuration
-- Easy environment switching
-- Simplified maintenance
-- Better security for sensitive data
-- Improved collaboration among team members
-
 ## Reports
 
 The framework generates comprehensive test reports in multiple formats:
@@ -460,7 +523,7 @@ Standard pytest-html reports are automatically generated:
 
 ### Allure Reports
 
-Interactive Allure reports provide enhanced visualization:
+Interactive Allure reports provide enhanced visualization with automatically populated sections:
 
 **Generate and View Allure Reports:**
 
@@ -472,14 +535,59 @@ allure generate reports/allure-results -o reports/allure-report --clean
 allure serve reports/allure-results
 ```
 
+**Allure Dashboard:**
+
+![Allure Overview](docs/screenshots/allure-overview.png)
+*Interactive Allure test result dashboard with comprehensive test execution overview*
+
 **Allure Features:**
 
 - Interactive test result dashboard
-- Test execution trends and history
+- **Environment Section**: Automatically populated with browser, OS, Python version, framework details
+- **Executors Section**: Shows executor information (automatically generated)
+- **Trend Section**: Test execution trends and history across multiple runs (automatically tracked)
 - Screenshots and error logs attached to failed tests
 - Test categorization and filtering
 - Timeline view of test execution
-- Environment and configuration details
+
+**Allure Report Views:**
+
+![Allure Categories](docs/screenshots/allure-categories.png)
+*Categories view showing test categorization and grouping*
+
+![Allure Suites](docs/screenshots/allure-suites.png)
+*Test suites view displaying organized test suite structure*
+
+![Allure Graphs](docs/screenshots/allure-graphs.png)
+*Graphs view with test execution statistics and visualizations*
+
+![Allure Timeline](docs/screenshots/allure-timeline.png)
+*Timeline view showing test execution timeline and duration*
+
+![Allure Behaviours](docs/screenshots/allure-behaviours.png)
+*Behaviours view displaying test scenarios organized by behavior*
+
+![Allure Packages](docs/screenshots/allure-packages.png)
+*Packages view showing test organization by package structure*
+
+**Automatic Allure Configuration:**
+
+The framework automatically generates the following files on every test run:
+
+- `reports/allure-results/environment.properties` - Contains:
+  - Browser name and version (auto-detected)
+  - Python version
+  - OS information (name, version, architecture)
+  - Framework details
+  - Test URL from configuration
+  - Headless mode setting
+
+- `reports/allure-results/executor.json` - Contains:
+  - Executor name and type
+  - Build information
+  - Report metadata
+
+- `reports/allure-results/history/` - Automatically copied from previous reports for Trend visualization
 
 **Sample Allure Commands:**
 
@@ -494,6 +602,8 @@ allure generate reports/allure-results -o reports/allure-report
 open reports/allure-report/index.html
 ```
 
+**Note:** The Environment, Executors, and Trend sections are automatically populated. No manual configuration is required. The Trend section will appear after the second test run when history data becomes available.
+
 ### Screenshots
 
 Screenshots are automatically captured and attached to reports:
@@ -502,36 +612,6 @@ Screenshots are automatically captured and attached to reports:
 - **Integration**: Screenshots are embedded in both HTML and Allure reports
 - **Storage**: `reports/screenshots/` with timestamps and test names
 - **Error Logs**: Detailed error information saved alongside screenshots
-
-## Test Data
-
-Test data is stored in JSON files in the `data` directory:
-
-```json
-{
-  "selenium": {
-    "title": "Selenium",
-    "navigation_items": [
-      "Home",
-      "About",
-      "Documentation",
-      "Support",
-      "Blog"
-    ]
-  },
-  "browser_config": {
-    "chrome": {
-      "arguments": [
-        "--no-sandbox",
-        "--disable-dev-shm-usage"
-      ],
-      "preferences": {
-        "download.default_directory": "./downloads"
-      }
-    }
-  }
-}
-```
 
 ## Logging
 
@@ -580,46 +660,17 @@ Smart driver detection and management:
 
 ### Environment Management
 
-The framework supports multiple environment configurations through `config/environments.json`. This allows you to easily
-switch between different environments (dev, qa, staging, prod) without changing your test code.
+The framework supports multiple environment configurations through `config/environments.json`. See the [Configuration](#configuration) section for detailed information on environment setup and usage.
 
-**Example Usage:**
+**Quick Example:**
 
 ```python
 from utilities.config_manager import ConfigManager
 
-# Get default environment config
+# Get environment config
 config_manager = ConfigManager()
-default_env = config_manager.get_env_config()
-print(default_env["url"])  # https://www.selenium.dev
-
-# Get specific environment config
-qa_env = config_manager.get_env_config("qa")
-print(qa_env["url"])  # https://www.selenium.dev
-
-
-# Use in your page objects
-class MyPage(BasePage):
-    def __init__(self, driver):
-        super().__init__(driver)
-        env_config = ConfigManager().get_env_config("prod")
-        self.url = env_config["url"]
+env_config = config_manager.get_env_config("qa")  # or "dev", "staging", "prod"
 ```
-
-**Configuration Structure:**
-
-The `config/environments.json` file supports:
-
-- **default**: Default environment configuration
-- **environments**: Named environment configurations (dev, qa, staging, prod)
-- Each environment can have its own URL, credentials, and other settings
-
-**Benefits:**
-
-- Easy environment switching without code changes
-- Centralized environment configuration
-- Support for environment-specific credentials and settings
-- Clear separation between test code and environment configuration
 
 ### Directory Management
 
@@ -720,7 +771,9 @@ See [ROADMAP.md](ROADMAP.md) for planned features and upcoming releases.
 
 - Microsoft Edge browser support
 
-## Contributing
+## 🤝 Contributing
+
+This is a personal test automation framework project, but suggestions and improvements are welcome!
 
 1. Fork the repository
 2. Create a feature branch
@@ -728,27 +781,16 @@ See [ROADMAP.md](ROADMAP.md) for planned features and upcoming releases.
 4. Push to the branch
 5. Create a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License - feel free to use this as a template for your own test automation framework.
 
-## Examples
+## 👤 Author
 
-The framework includes example files to help you get started:
+**Yashwant Das** - Senior Specialist Quality Engineering
 
-### Environment Configuration Example
+💼 **LinkedIn:** [Yashwant Das](https://www.linkedin.com/in/yashwant-das)
 
-See `examples/environment_usage_example.py` for a complete example demonstrating:
+---
 
-- How to use `ConfigManager` to access environment configurations
-- Creating environment-aware page objects
-- Testing across multiple environments
-- Pytest test patterns with environment support
-
-Run the example:
-
-```bash
-python examples/environment_usage_example.py
-```
-
-This example shows practical usage patterns that you can adapt for your own test automation needs.
+Built with ❤️ using Python, Selenium, pytest, and Allure
