@@ -1,0 +1,20 @@
+{
+    "default": {
+        "url": "https://www.selenium.dev"
+    },
+    "environments": {
+        "dev": {
+            "url": "https://www.selenium.dev"
+        },
+        "qa": {
+            "url": "https://www.selenium.dev"
+        },
+        "staging": {
+            "url": "https://www.selenium.dev"
+        },
+        "prod": {
+            "url": "https://www.selenium.dev"
+        }
+    }
+}
+

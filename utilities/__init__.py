@@ -1,1 +1,1 @@
-# This file makes the utilities directory a Python package 
+"""Utility classes and helpers for the Selenium test framework.""" 

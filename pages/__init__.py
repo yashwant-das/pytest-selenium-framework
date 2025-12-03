@@ -1,1 +1,1 @@
-# This file makes the pages directory a Python package 
+"""Page Object Model classes for the Selenium test framework.""" 

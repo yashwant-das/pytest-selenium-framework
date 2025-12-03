@@ -1,8 +1,10 @@
+"""Logging configuration utility."""
 import logging
 import os
+from typing import Optional
 from datetime import datetime
 
-def setup_logger(name=None, level=logging.INFO):
+def setup_logger(name: Optional[str] = None, level: int = logging.INFO) -> logging.Logger:
     """Set up a logger with the specified name and level.
     
     Args:

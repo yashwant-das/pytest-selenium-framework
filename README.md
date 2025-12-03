@@ -5,13 +5,12 @@ A robust and maintainable test automation framework built with Python, Selenium,
 ## Features
 
 - **Page Object Model**: Organized page classes for better maintainability
-- **Cross-Browser Testing**: Support for Chrome, Firefox, and Edge browsers with auto-download capabilities
+- **Cross-Browser Testing**: Support for Chrome and Firefox browsers with auto-download capabilities (Edge support planned for next release)
 - **Headless Mode**: Run tests without opening browser windows
 - **Parallel Execution**: Run tests in parallel with configurable worker count for faster execution
 - **Multiple Report Formats**: HTML reports with screenshots and interactive Allure reports
 - **Auto-Driver Management**: Automatic driver download with PATH detection fallback
-- **System Checks**: Comprehensive environment verification before test execution
-- **Logging**: Comprehensive logging of test execution and system checks
+- **Logging**: Comprehensive logging of test execution
 - **Configuration Management**: Flexible configuration for different environments
 - **Data-Driven Testing**: Support for external test data
 - **Screenshot Capture**: Automatic screenshots on test failures with Allure integration
@@ -22,9 +21,9 @@ A robust and maintainable test automation framework built with Python, Selenium,
 ```text
 pytest-selenium-framework/
 ├── config/                  # Configuration files
-│   └── config.json          # Browser and technical settings
+│   ├── config.json          # Framework settings (browser, timeouts, reporting)
+│   └── environments.json    # Environment-specific settings (dev, qa, staging, prod)
 ├── logs/                    # Log files (auto-generated)
-│   ├── system_check.log     # System check logs
 │   └── test_run_*.log       # Test execution logs with timestamps
 ├── pages/                   # Page Object Model classes
 │   ├── __init__.py          # Package initialization
@@ -35,29 +34,53 @@ pytest-selenium-framework/
 │   ├── screenshots/         # Failure screenshots with error logs
 │   ├── allure-results/      # Allure test results (raw data)
 │   └── allure-report/       # Generated Allure HTML reports
-├── test_data/               # Test data and environment config files
-│   ├── default.json         # Environment-specific settings
-│   └── test_data.json       # Test data for data-driven tests
+├── data/                    # Test data files
+│   └── fixtures.json        # Test data for data-driven tests
 ├── tests/                   # Test files
 │   ├── conftest.py          # Pytest configuration and fixtures
-│   ├── test_selenium.py     # Basic Selenium website tests
-│   ├── test_features.py     # Advanced feature tests
-│   ├── test_parallel.py     # Parallel execution tests
-│   └── test_webdriver_support.py # Comprehensive WebDriver capability tests
+│   └── test_framework_capabilities.py # Comprehensive test suite showcasing all framework features
 ├── utilities/               # Utility classes
 │   ├── __init__.py          # Package initialization
 │   ├── logger.py            # Logging configuration
 │   ├── screenshot_helper.py # Screenshot capture utility
-│   └── system_check.py      # System environment check utility
+│   ├── driver_factory.py    # WebDriver factory for unified driver creation
+│   ├── config_manager.py    # Configuration manager for loading and caching configs
+│   └── exceptions.py        # Custom exception classes
 ├── venv/                    # Python virtual environment
-├── run_system_check.py      # Script to run system checks
-├── run_tests.py             # Main script to run tests with advanced options
-├── test_all_features.sh     # Shell script for running all tests
 ├── requirements.txt         # Project dependencies
 ├── setup.py                 # Package setup script
 ├── pytest.ini               # Pytest configuration with Allure support
 └── README.md                # Project documentation
 ```
+
+## Prerequisites
+
+Before installing the framework, ensure you have:
+
+- **Python 3.8+** (check with `python --version`)
+- **pip** package manager
+- **One or more browsers installed**:
+  - Chrome/Chromium
+  - Firefox
+
+### Quick Setup Validation
+
+After installation, you can verify your setup:
+
+```bash
+# Check Python version
+python --version  # Should be 3.8+
+
+# Verify packages installed
+pip list | grep selenium
+pip list | grep pytest
+
+# Test driver availability (optional - drivers will auto-download if not in PATH)
+chromedriver --version  # If installed via Homebrew
+geckodriver --version   # If installed via Homebrew
+```
+
+If drivers aren't in PATH, the framework will automatically download them on first run using webdriver-manager.
 
 ## Installation
 
@@ -88,7 +111,6 @@ pytest-selenium-framework/
    **Option A: Automatic Download (Recommended)**
    - The framework automatically downloads drivers using webdriver-manager
    - No manual setup required for Chrome and Firefox
-   - Edge driver may require manual installation due to DNS issues
 
    **Option B: Manual Installation (More Reliable)**
    
@@ -96,8 +118,6 @@ pytest-selenium-framework/
    # macOS with Homebrew
    brew install chromedriver geckodriver
    
-   # Add EdgeDriver manually to PATH
-   # Download from: https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/
    ```
    
    **Option C: PATH Detection**
@@ -106,119 +126,6 @@ pytest-selenium-framework/
    - Provides the most reliable driver resolution
 
 ## Usage
-
-### Enhanced Test Orchestrator Script
-
-The framework includes a powerful `test_all_features.sh` script that provides comprehensive testing orchestration with professional-grade features:
-
-#### Key Features
-
-- **Colored Output**: Professional logging with color-coded status messages
-- **Flexible Execution**: Command-line options for targeted testing
-- **Error Tracking**: Comprehensive failure reporting and statistics
-- **Auto-Detection**: Automatic Python executable detection (python3/python)
-- **Performance Metrics**: Execution timing and detailed summaries
-- **Environment Integration**: Optional system validation with skip capability
-
-#### Usage Examples
-
-```bash
-# Run comprehensive testing (all browsers, all configurations)
-./test_all_features.sh
-
-# Quick testing (basic configurations only)
-./test_all_features.sh --quick
-
-# Browser-specific testing
-./test_all_features.sh --chrome-only
-./test_all_features.sh --firefox-only
-./test_all_features.sh --edge-only
-
-# CI/CD friendly (skip system check)
-./test_all_features.sh --firefox-only --no-system-check
-
-# Help and options
-./test_all_features.sh --help
-```
-
-#### Command-Line Options
-
-| Option | Description | Use Case |
-|--------|-------------|----------|
-| `--chrome-only` | Run only Chrome browser tests | Chrome-specific validation |
-| `--firefox-only` | Run only Firefox browser tests | Firefox-specific validation |
-| `--edge-only` | Run only Edge browser tests | Edge-specific validation |
-| `--quick` | Run basic configurations only | Fast development testing |
-| `--no-system-check` | Skip system environment validation | CI/CD pipelines |
-| `--help` | Display usage information | Reference and documentation |
-
-#### Test Configuration Matrix
-
-**Quick Mode (--quick):**
-
-- Browser normal mode
-- Browser headless mode
-
-**Full Mode (default):**
-
-- Browser normal mode
-- Browser headless mode  
-- Parallel execution (2-3 workers)
-- Headless + Parallel combinations
-- Advanced configurations (4+ workers)
-- Allure reporting integration
-- Cleanup functionality testing
-
-#### Example Output
-
-```bash
-[INFO] Starting comprehensive framework testing...
-[INFO] === CHROME BROWSER TESTS ===
-[SUCCESS] Test configuration passed: Chrome - Normal mode
-[SUCCESS] Test configuration passed: Chrome - Headless mode
-========================================
-[INFO] TEST EXECUTION SUMMARY
-========================================
-Total Test Configurations: 8
-Passed: 8
-Failed: 0
-Duration: 2m 45s
-========================================
-[SUCCESS] All test configurations passed!
-```
-
-### Running System Checks
-
-Before running tests, verify that your environment is properly set up:
-
-```bash
-python run_system_check.py
-```
-
-The system check validates:
-
-- Python version compatibility (3.7+)
-- Required packages installation
-- Browser installation (Chrome, Firefox, Edge)
-- Driver availability (PATH detection + webdriver-manager fallback)
-- Directory structure
-- Driver functionality testing
-
-**Sample Output:**
-```text
-✅ Python version 3.13.1 is compatible
-✅ Package 'selenium' is installed
-✅ Chrome browser is installed
-✅ ChromeDriver version 138.0.7204.157 is available
-✅ ChromeDriver is working correctly
-✅ Firefox browser is installed
-✅ GeckoDriver version 0.36.0 is available
-✅ GeckoDriver is working correctly
-✅ Edge browser is installed
-✅ EdgeDriver version 138.0.3351.95 is available
-✅ EdgeDriver is working correctly
-✅ All system checks PASSED! The system is ready for automation
-```
 
 ### Running Tests
 
@@ -244,8 +151,6 @@ python run_tests.py --browser chrome
 # Run tests in Firefox
 python run_tests.py --browser firefox
 
-# Run tests in Edge
-python run_tests.py --browser edge
 ```
 
 **Execution Modes:**
@@ -283,7 +188,6 @@ python run_tests.py --test-path tests/test_features.py --parallel 4 --headless -
 # Cross-browser testing
 python run_tests.py --browser chrome --test-path tests/test_parallel.py
 python run_tests.py --browser firefox --test-path tests/test_parallel.py  
-python run_tests.py --browser edge --test-path tests/test_parallel.py
 ```
 
 ### Command Line Options
@@ -291,7 +195,7 @@ python run_tests.py --browser edge --test-path tests/test_parallel.py
 | Option | Description | Example |
 |--------|-------------|---------|
 | `--test-path` | Path to test file or directory | `--test-path tests/test_features.py` |
-| `--browser` | Browser to use (chrome, firefox, edge) | `--browser firefox` |
+| `--browser` | Browser to use (chrome, firefox) | `--browser firefox` |
 | `--headless` | Run tests in headless mode | `--headless` |
 | `--parallel` | Number of parallel workers | `--parallel 4` |
 | `--skip-system-check` | Skip system check before running tests | `--skip-system-check` |
@@ -302,94 +206,6 @@ python run_tests.py --browser edge --test-path tests/test_parallel.py
 - Sequential execution: ~20 seconds for 7 tests
 - Parallel execution (4 workers): ~10 seconds for 7 tests (50% faster)
 - Headless mode: Additional 20-30% performance improvement
-
-### WebDriver Support Validation
-
-The framework includes a comprehensive WebDriver capability test suite (`test_webdriver_support.py`) that validates all WebDriver functionality to ensure your testing environment is robust and reliable.
-
-#### Test Coverage
-
-The WebDriver support tests cover **35 test cases** across **8 major categories**:
-
-**Core WebDriver Capabilities:**
-
-- Driver initialization and session management
-- Browser and platform detection
-- Version compatibility validation
-
-**Navigation & Interaction:**
-
-- Page navigation (get, back, forward)
-- Element finding strategies (by tag, class, ID, etc.)
-- Element interaction (click, text access, form input)
-- Link clicking and navigation validation
-
-**Advanced Features:**
-
-- JavaScript execution and interaction
-- Window management (size, position, maximize)
-- Cookie operations (add, get, delete)
-- Screenshot capabilities (page and element-level)
-
-**Waiting Mechanisms:**
-
-- Implicit wait configuration
-- Explicit wait with WebDriverWait
-- Element state waiting (clickable, visible, present)
-
-**Error Handling:**
-
-- Exception handling validation
-- Timeout management
-- Invalid selector handling
-
-**Performance & Integration:**
-
-- Page load timing measurement
-- Element finding performance
-- Framework integration validation
-
-#### WebDriver Test Usage
-
-```bash
-# Run WebDriver capability validation
-python run_tests.py --test-path tests/test_webdriver_support.py
-
-# Cross-browser WebDriver validation
-python run_tests.py --test-path tests/test_webdriver_support.py --browser chrome
-python run_tests.py --test-path tests/test_webdriver_support.py --browser firefox
-python run_tests.py --test-path tests/test_webdriver_support.py --browser edge
-
-# Quick WebDriver health check (headless mode)
-python run_tests.py --test-path tests/test_webdriver_support.py --headless
-
-# Performance-focused WebDriver validation
-python run_tests.py --test-path tests/test_webdriver_support.py::TestPerformanceCapabilities
-```
-
-#### When to Run WebDriver Support Tests
-
-**Recommended scenarios:**
-
-- **Environment Setup**: When setting up new testing environments
-- **Browser Updates**: After browser or driver updates
-- **Troubleshooting**: When debugging WebDriver-related issues
-- **CI/CD Validation**: As part of environment health checks
-- **Framework Validation**: Before important test campaigns
-
-**Sample Output:**
-
-```bash
-===== 35 passed in 66.40s =====
-TestWebDriverCapabilities: ✓ All 4 tests passed
-TestNavigationCapabilities: ✓ All 4 tests passed  
-TestElementInteraction: ✓ All 4 tests passed
-TestJavaScriptExecution: ✓ All 3 tests passed
-TestWindowManagement: ✓ All 3 tests passed
-TestErrorHandling: ✓ All 3 tests passed
-```
-
-This comprehensive validation ensures your WebDriver setup is production-ready and can handle all required automation scenarios.
 
 ## Page Object Model
 
@@ -420,7 +236,7 @@ class SeleniumPage(BasePage):
 
 The framework uses a well-organized configuration structure split across multiple files for better maintainability:
 
-### 1. Environment Configuration (`test_data/default.json`)
+### 1. Environment Configuration (`config/environments.json`)
 
 This file manages environment-specific settings and credentials. It supports multiple environments with their own configurations:
 
@@ -456,25 +272,39 @@ This file manages environment-specific settings and credentials. It supports mul
 }
 ```
 
-### 2. Browser Configuration (`config/config.json`)
+### 2. Framework Configuration (`config/config.json`)
 
-This file contains browser-specific settings and timeouts that remain constant across environments:
+This file contains framework-specific settings including browser configuration, timeouts, reporting, and retry settings:
 
 ```json
 {
   "browser": {
-    "name": "chrome",
+    "default": "chrome",
     "headless": false,
-    "implicit_wait": 10
+    "implicit_wait": 10,
+    "chrome": {
+      "arguments": ["--no-sandbox", "--disable-dev-shm-usage"]
+    }
   },
   "timeouts": {
+    "element": 10,
     "page_load": 30,
-    "element_wait": 10
+    "script": 30,
+    "implicit": 10
+  },
+  "reporting": {
+    "screenshots": true,
+    "html_report": true,
+    "allure_report": true
+  },
+  "retry": {
+    "max_retries": 2,
+    "delay": 1
   }
 }
 ```
 
-### 3. Test Data (`test_data/test_data.json`)
+### 3. Test Data (`data/fixtures.json`)
 
 This file contains test-specific data used in data-driven tests:
 
@@ -491,17 +321,17 @@ This file contains test-specific data used in data-driven tests:
 
 The framework's configuration is organized into three main categories:
 
-1. **Environment Settings** (`test_data/default.json`)
-   - Environment-specific URLs
-   - User credentials
-   - Other environment variables
-
-2. **Technical Settings** (`config/config.json`)
+1. **Framework Settings** (`config/config.json`)
    - Browser configuration
    - Timeout values
-   - Other technical parameters
+   - Reporting settings
+   - Retry configuration
 
-3. **Test Data** (`test_data/test_data.json`)
+2. **Environment Settings** (`config/environments.json`)
+   - Environment-specific URLs
+   - Environment variables
+
+3. **Test Data** (`data/fixtures.json`)
    - Test-specific data
    - Expected values
    - Test scenarios
@@ -575,7 +405,7 @@ Screenshots are automatically captured and attached to reports:
 
 ## Test Data
 
-Test data is stored in JSON files in the `test_data` directory:
+Test data is stored in JSON files in the `data` directory:
 
 ```json
 {
@@ -598,7 +428,6 @@ Test data is stored in JSON files in the `test_data` directory:
 
 The framework provides comprehensive logging with automatic timestamping:
 
-- **System Check Logs**: `logs/system_check.log`
 - **Test Execution Logs**: `logs/test_run_YYYYMMDD_HHMMSS.log`
 - **Console Logging**: Real-time test execution information
 - **Log Levels**: INFO, WARNING, ERROR with proper formatting
@@ -617,10 +446,10 @@ The framework supports parallel test execution using pytest-xdist:
 
 ```bash
 # Run tests with 4 parallel workers
-python run_tests.py --parallel 4
+pytest -n 4
 
 # Optimal parallel execution with headless mode
-python run_tests.py --parallel 4 --headless --browser chrome
+pytest -n 4 --headless --browser chrome
 ```
 
 **Benefits:**
@@ -641,26 +470,94 @@ Smart driver detection and management:
 
 ### Environment Management
 
-Flexible environment configuration:
+Environment configuration is managed through `config/environments.json`. The framework automatically loads the appropriate environment settings based on your configuration.
 
-```bash
-# Test against different environments
-python run_tests.py --env dev
-python run_tests.py --env staging  
-python run_tests.py --env prod
-```
+### Directory Management
 
-### Cleanup Management
+Required directories (logs, reports, screenshots) are automatically created when tests run. No manual setup needed.
 
-Optional cleanup for different use cases:
+## Troubleshooting
 
-```bash
-# Development: Preserve history for debugging
-python run_tests.py
+### Common Issues
 
-# CI/CD: Fresh start for consistent results  
-python run_tests.py --clean
-```
+**Driver Not Found Errors:**
+- The framework will automatically download drivers if not found in PATH
+- If auto-download fails, manually install drivers:
+  ```bash
+  # macOS
+  brew install chromedriver geckodriver
+  
+  # Or download from browser vendor websites
+  ```
+
+**Browser Not Installed:**
+- Ensure the browser is installed before running tests
+- Tests will fail with clear error messages if browser is missing
+
+**Import Errors:**
+- Verify all dependencies are installed: `pip install -r requirements.txt`
+- Check Python version: `python --version` (should be 3.8+)
+
+**Permission Issues:**
+- On macOS/Linux, ensure drivers have execute permissions
+- Framework automatically fixes permissions for auto-downloaded drivers
+
+**Configuration Errors:**
+- Verify `config/config.json` exists and is valid JSON
+- Check `config/environments.json` and `data/fixtures.json` are valid
+
+### Getting Help
+
+If tests fail, check:
+1. Log files in `logs/` directory for detailed error messages
+2. Screenshots in `reports/screenshots/` for visual debugging
+3. HTML/Allure reports for test execution details
+
+The framework provides clear error messages to help diagnose issues quickly.
+
+## Why Selenium in 2025?
+
+While modern tools like Playwright have gained popularity, Selenium remains valuable:
+
+- **Ecosystem Maturity**: Extensive community, documentation, and integrations
+- **Enterprise Adoption**: Many organizations standardize on Selenium
+- **Python Integration**: Excellent pytest integration and Python ecosystem support
+- **Cross-Browser Support**: Proven support for Chrome and Firefox
+- **Learning Value**: Demonstrates solid framework design patterns
+- **Existing Infrastructure**: Works with existing Selenium Grid setups
+
+This framework provides a production-ready, maintainable foundation for Selenium-based test automation.
+
+## Framework Architecture
+
+### Core Components
+
+**DriverFactory** (`utilities/driver_factory.py`):
+- Unified driver creation for all browsers
+- Smart PATH detection with webdriver-manager fallback
+- Consistent configuration handling
+
+**ConfigManager** (`utilities/config_manager.py`):
+- Singleton pattern for configuration loading
+- Caches all configs to avoid repeated file reads
+- Provides typed access to browser, environment, and test data configs
+
+**ScreenshotHelper** (`utilities/screenshot_helper.py`):
+- Centralized screenshot capture logic
+- Automatic Allure and HTML report integration
+- Support for failure and pass screenshots
+
+**BasePage** (`pages/base_page.py`):
+- Common page object methods with type hints
+- Explicit waits and error handling
+- Screenshot integration for debugging
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for planned features and upcoming releases.
+
+**Next Release (v0.2.0):**
+- Microsoft Edge browser support
 
 ## Contributing
 

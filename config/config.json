@@ -3,38 +3,11 @@
         "default": "chrome",
         "headless": false,
         "implicit_wait": 10,
-        "page_load_timeout": 30,
-        "script_timeout": 30,
         "chrome": {
-            "implicit_wait": 10,
             "arguments": ["--no-sandbox", "--disable-dev-shm-usage"]
         },
         "firefox": {
-            "implicit_wait": 10,
             "arguments": []
-        },
-        "edge": {
-            "implicit_wait": 10,
-            "arguments": []
-        }
-    },
-    "environment": {
-        "default": "dev",
-        "dev": {
-            "url": "https://www.selenium.dev",
-            "timeout": 10
-        },
-        "qa": {
-            "url": "https://www.selenium.qa",
-            "timeout": 10
-        },
-        "staging": {
-            "url": "https://www.selenium.staging",
-            "timeout": 10
-        },
-        "prod": {
-            "url": "https://www.selenium.com",
-            "timeout": 10
         }
     },
     "reporting": {
