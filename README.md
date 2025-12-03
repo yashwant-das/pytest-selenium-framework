@@ -45,7 +45,6 @@ Page Object Model (POM) design pattern and provides a comprehensive set of utili
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
-- [Author](#author)
 
 ## Features
 
@@ -784,12 +783,6 @@ This is a personal test automation framework project, but suggestions and improv
 ## License
 
 MIT License - feel free to use this as a template for your own test automation framework.
-
-## Author
-
-**Yashwant Das** - Senior Specialist Quality Engineering
-
-**LinkedIn:** [Yashwant Das](https://www.linkedin.com/in/yashwant-das)
 
 ---
 
