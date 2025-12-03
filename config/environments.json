@@ -1,19 +1,24 @@
 {
     "default": {
-        "url": "https://www.selenium.dev"
+        "url": "https://www.selenium.dev",
+        "description": "Default environment for demo purposes"
     },
     "environments": {
         "dev": {
-            "url": "https://www.selenium.dev"
+            "url": "https://www.selenium.dev",
+            "description": "Development environment"
         },
         "qa": {
-            "url": "https://www.selenium.dev"
+            "url": "https://www.selenium.dev",
+            "description": "QA testing environment"
         },
         "staging": {
-            "url": "https://www.selenium.dev"
+            "url": "https://www.selenium.dev",
+            "description": "Staging environment for pre-production testing"
         },
         "prod": {
-            "url": "https://www.selenium.dev"
+            "url": "https://www.selenium.dev",
+            "description": "Production environment"
         }
     }
 }

@@ -1,6 +1,5 @@
 """Pytest configuration and fixtures."""
 import pytest
-import allure
 from selenium import webdriver
 import os
 import uuid
@@ -22,7 +21,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 @pytest.fixture(scope="session")
 def config() -> Dict[str, Any]:
-    """Load test configuration using ConfigManager.
+    """Load main framework configuration using ConfigManager.
     
     Returns:
         dict: Main configuration from config.json
@@ -53,30 +52,41 @@ def driver(request: pytest.FixtureRequest, test_data: Dict[str, Any]) -> Generat
     
     # Generate a unique session ID for parallel execution
     session_id = str(uuid.uuid4())
-    driver.capabilities['sessionId'] = session_id
     
-    # Add worker ID for parallel execution
-    if hasattr(request.config, 'slaveinput'):
-        worker_id = request.config.slaveinput.get('slaveid', 'unknown')
+    # Add session and worker IDs to capabilities for parallel execution tracking
+    # Use workerinput (pytest-xdist) or gw0 for main process
+    if hasattr(request.config, 'workerinput'):
+        # pytest-xdist worker process
+        worker_id = request.config.workerinput.get('workerid', 'unknown')
+    else:
+        # Main process (not parallel)
+        worker_id = 'main'
+    
+    # Safely add metadata to capabilities if it's a dict
+    if isinstance(driver.capabilities, dict):
+        driver.capabilities['sessionId'] = session_id
         driver.capabilities['workerId'] = worker_id
+        logger.debug(f"Driver session ID: {session_id}, Worker ID: {worker_id}")
     
     yield driver
     
-    # Cleanup
+    # Cleanup: Quit driver and handle any errors gracefully
     try:
-        driver.quit()
+        if driver:
+            driver.quit()
+            logger.debug("Driver quit successfully")
     except Exception as e:
-        logger.error(f"Error quitting driver: {e}")
+        logger.warning(f"Error quitting driver (may already be closed): {e}")
 
 @pytest.fixture(scope="function")
 def screenshot_helper(driver: webdriver.Remote) -> ScreenshotHelper:
-    """Fixture to provide ScreenshotHelper instance.
+    """Provide ScreenshotHelper instance for taking and managing screenshots.
     
     Args:
         driver: WebDriver instance
         
     Returns:
-        ScreenshotHelper instance
+        ScreenshotHelper instance configured for the current driver
     """
     return ScreenshotHelper(driver)
 
@@ -122,15 +132,18 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.fixture(scope="session")
 def test_data() -> Dict[str, Any]:
-    """Load test data using ConfigManager.
+    """Load all test data and configurations using ConfigManager.
     
     Returns:
-        dict: Dictionary containing test_data, env_config, and browser_config
+        dict: Dictionary containing:
+            - test_data: Test data from fixtures.json
+            - env_config: Environment configurations
+            - browser_config: Browser-specific configurations
     """
     return ConfigManager().get_all_configs()
 
 def pytest_configure(config: pytest.Config) -> None:
-    """Register custom markers and setup directories."""
+    """Register custom markers and setup required directories."""
     # Register custom markers
     config.addinivalue_line(
         "markers",
@@ -147,6 +160,8 @@ def pytest_configure(config: pytest.Config) -> None:
     ]
     
     for directory in directories:
-        if not os.path.exists(directory):
+        try:
             os.makedirs(directory, exist_ok=True)
-            logger.info(f"Created directory: {directory}")
+            logger.debug(f"Ensured directory exists: {directory}")
+        except OSError as e:
+            logger.warning(f"Could not create directory {directory}: {e}")

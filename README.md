@@ -6,6 +6,7 @@ A robust and maintainable test automation framework built with Python, Selenium,
 
 - **Page Object Model**: Organized page classes for better maintainability
 - **Cross-Browser Testing**: Support for Chrome and Firefox browsers with auto-download capabilities (Edge support planned for next release)
+- **Multi-Environment Support**: Built-in support for multiple environments (dev, qa, staging, prod) with easy switching
 - **Headless Mode**: Run tests without opening browser windows
 - **Parallel Execution**: Run tests in parallel with configurable worker count for faster execution
 - **Multiple Report Formats**: HTML reports with screenshots and interactive Allure reports
@@ -14,7 +15,6 @@ A robust and maintainable test automation framework built with Python, Selenium,
 - **Configuration Management**: Flexible configuration for different environments
 - **Data-Driven Testing**: Support for external test data
 - **Screenshot Capture**: Automatic screenshots on test failures with Allure integration
-- **Cleanup Management**: Optional cleanup of temporary files and previous test results
 
 ## Project Structure
 
@@ -46,10 +46,14 @@ pytest-selenium-framework/
 │   ├── driver_factory.py    # WebDriver factory for unified driver creation
 │   ├── config_manager.py    # Configuration manager for loading and caching configs
 │   └── exceptions.py        # Custom exception classes
-├── venv/                    # Python virtual environment
+├── examples/                # Example files
+│   ├── __init__.py          # Package initialization
+│   └── environment_usage_example.py # Example demonstrating environment configuration
 ├── requirements.txt         # Project dependencies
 ├── setup.py                 # Package setup script
 ├── pytest.ini               # Pytest configuration with Allure support
+├── ROADMAP.md               # Planned features and roadmap
+├── LICENSE                  # License file
 └── README.md                # Project documentation
 ```
 
@@ -113,13 +117,12 @@ If drivers aren't in PATH, the framework will automatically download them on fir
    - No manual setup required for Chrome and Firefox
 
    **Option B: Manual Installation (More Reliable)**
-   
+
    ```bash
    # macOS with Homebrew
    brew install chromedriver geckodriver
-   
    ```
-   
+
    **Option C: PATH Detection**
    - The framework first checks for drivers in your system PATH
    - Falls back to webdriver-manager if PATH drivers not found
@@ -133,76 +136,84 @@ If drivers aren't in PATH, the framework will automatically download them on fir
 
 ```bash
 # Run all tests
-python run_tests.py
+pytest
 
 # Run specific test file
-python run_tests.py --test-path tests/test_selenium.py
+pytest tests/test_framework_capabilities.py
+
+# Run specific test class
+pytest tests/test_framework_capabilities.py::TestPageObjectModel
 
 # Run specific test method
-python run_tests.py --test-path tests/test_features.py::test_browser_support
+pytest tests/test_framework_capabilities.py::TestPageObjectModel::test_page_object_navigation
 ```
 
 **Browser Selection:**
 
 ```bash
 # Run tests in Chrome (default)
-python run_tests.py --browser chrome
+pytest --browser chrome
 
 # Run tests in Firefox
-python run_tests.py --browser firefox
-
+pytest --browser firefox
 ```
 
 **Execution Modes:**
 
 ```bash
 # Run tests in headless mode (faster, no UI)
-python run_tests.py --headless
+pytest --headless
 
 # Run tests in parallel (much faster for large test suites)
-python run_tests.py --parallel 4
+pytest -n 4
 
 # Combine options for optimal performance
-python run_tests.py --browser chrome --headless --parallel 4
+pytest --browser chrome --headless -n 4
 ```
 
-**Cleanup and System Options:**
+**Test Filtering:**
 
 ```bash
-# Clean previous results before running (fresh start)
-python run_tests.py --clean
+# Run only smoke tests
+pytest -m smoke
 
-# Skip system check (faster startup)
-python run_tests.py --skip-system-check
+# Run only Chrome browser tests
+pytest -m browser_chrome
 
-# Environment-specific testing
-python run_tests.py --env qa
+# Run only parallel execution tests
+pytest -m parallel
+
+# Run tests excluding slow tests
+pytest -m "not slow"
 ```
 
 **Advanced Examples:**
 
 ```bash
-# Full parallel execution with cleanup
-python run_tests.py --test-path tests/test_features.py --parallel 4 --headless --clean
+# Full parallel execution with headless mode
+pytest -n 4 --headless --browser chrome
 
 # Cross-browser testing
-python run_tests.py --browser chrome --test-path tests/test_parallel.py
-python run_tests.py --browser firefox --test-path tests/test_parallel.py  
+pytest --browser chrome -m smoke
+pytest --browser firefox -m smoke
+
+# Run specific test class in parallel
+pytest tests/test_framework_capabilities.py::TestParallelExecution -n 4
 ```
 
 ### Command Line Options
 
 | Option | Description | Example |
 |--------|-------------|---------|
-| `--test-path` | Path to test file or directory | `--test-path tests/test_features.py` |
 | `--browser` | Browser to use (chrome, firefox) | `--browser firefox` |
 | `--headless` | Run tests in headless mode | `--headless` |
-| `--parallel` | Number of parallel workers | `--parallel 4` |
-| `--skip-system-check` | Skip system check before running tests | `--skip-system-check` |
-| `--clean` | Clean previous results and temp files | `--clean` |
-| `--env` | Environment configuration to use | `--env staging` |
+| `-n` or `--numprocesses` | Number of parallel workers | `pytest -n 4` |
+| `-m` | Run tests matching marker | `pytest -m smoke` |
+| `-v` | Verbose output | `pytest -v` |
+| `-k` | Run tests matching expression | `pytest -k "navigation"` |
 
 **Performance Comparison:**
+
 - Sequential execution: ~20 seconds for 7 tests
 - Parallel execution (4 workers): ~10 seconds for 7 tests (50% faster)
 - Headless mode: Additional 20-30% performance improvement
@@ -215,6 +226,7 @@ The framework follows the Page Object Model design pattern:
 - **Specific Pages**: Each page has its own class with specific locators and methods
 
 Example:
+
 ```python
 from pages.base_page import BasePage
 
@@ -238,43 +250,88 @@ The framework uses a well-organized configuration structure split across multipl
 
 ### 1. Environment Configuration (`config/environments.json`)
 
-This file manages environment-specific settings and credentials. It supports multiple environments with their own configurations:
+This file manages environment-specific settings and supports multiple environments. The framework provides built-in support for environment switching without code changes.
+
+**Current Configuration:**
 
 ```json
 {
     "default": {
-        "url": "https://www.example.com",
-        "username": "test_user",
-        "password": "test_password"
+        "url": "https://www.selenium.dev",
+        "description": "Default environment for demo purposes"
     },
     "environments": {
         "dev": {
-            "url": "https://dev.example.com",
-            "username": "dev_user",
-            "password": "dev_password"
+            "url": "https://www.selenium.dev",
+            "description": "Development environment"
         },
         "qa": {
-            "url": "https://qa.example.com",
-            "username": "qa_user",
-            "password": "qa_password"
+            "url": "https://www.selenium.dev",
+            "description": "QA testing environment"
         },
         "staging": {
-            "url": "https://staging.example.com",
-            "username": "staging_user",
-            "password": "staging_password"
+            "url": "https://www.selenium.dev",
+            "description": "Staging environment for pre-production testing"
         },
         "prod": {
-            "url": "https://www.example.com",
-            "username": "prod_user",
-            "password": "prod_password"
+            "url": "https://www.selenium.dev",
+            "description": "Production environment"
         }
     }
 }
 ```
 
+**For Your Project:**
+
+Update the URLs and add any environment-specific settings:
+
+```json
+{
+    "default": {
+        "url": "https://www.example.com",
+        "api_key": "default_key"
+    },
+    "environments": {
+        "dev": {
+            "url": "https://dev.example.com",
+            "api_key": "dev_key",
+            "timeout": 30
+        },
+        "qa": {
+            "url": "https://qa.example.com",
+            "api_key": "qa_key",
+            "timeout": 20
+        },
+        "staging": {
+            "url": "https://staging.example.com",
+            "api_key": "staging_key"
+        },
+        "prod": {
+            "url": "https://www.example.com",
+            "api_key": "prod_key"
+        }
+    }
+}
+```
+
+**Accessing Environment Config:**
+
+```python
+from utilities.config_manager import ConfigManager
+
+config_manager = ConfigManager()
+
+# Get default environment
+default = config_manager.get_env_config()
+
+# Get specific environment
+qa_config = config_manager.get_env_config("qa")
+prod_config = config_manager.get_env_config("prod")
+```
+
 ### 2. Framework Configuration (`config/config.json`)
 
-This file contains framework-specific settings including browser configuration, timeouts, reporting, and retry settings:
+This file contains browser-specific settings and configuration:
 
 ```json
 {
@@ -282,50 +339,82 @@ This file contains framework-specific settings including browser configuration, 
     "default": "chrome",
     "headless": false,
     "implicit_wait": 10,
+    "window_size": {
+      "width": 1920,
+      "height": 1080
+    },
     "chrome": {
-      "arguments": ["--no-sandbox", "--disable-dev-shm-usage"]
+      "arguments": ["--no-sandbox", "--disable-dev-shm-usage"],
+      "preferences": {}
+    },
+    "firefox": {
+      "arguments": [],
+      "preferences": {}
     }
-  },
-  "timeouts": {
-    "element": 10,
-    "page_load": 30,
-    "script": 30,
-    "implicit": 10
-  },
-  "reporting": {
-    "screenshots": true,
-    "html_report": true,
-    "allure_report": true
-  },
-  "retry": {
-    "max_retries": 2,
-    "delay": 1
   }
 }
 ```
 
+**Configuration Options:**
+
+- **default**: Default browser to use
+- **headless**: Run browsers in headless mode by default
+- **implicit_wait**: Default implicit wait time in seconds
+- **window_size**: Default browser window size
+- **chrome/firefox**: Browser-specific settings
+  - **arguments**: List of browser command-line arguments
+  - **preferences**: Browser preferences (Chrome) or options (Firefox)
+
 ### 3. Test Data (`data/fixtures.json`)
 
-This file contains test-specific data used in data-driven tests:
+This file contains test-specific data used in data-driven tests. The structure is flexible and can be customized for your application:
 
 ```json
 {
   "selenium": {
-    "title": "Selenium",
-    "navigation_items": ["Home", "About", "Documentation", "Support", "Blog"]
+    "navigation": {
+      "about": "About",
+      "downloads": "Downloads",
+      "documentation": "Documentation",
+      "projects": "Projects",
+      "support": "Support",
+      "blog": "Blog"
+    },
+    "components": {
+      "webdriver": "Selenium WebDriver",
+      "ide": "Selenium IDE",
+      "grid": "Selenium Grid"
+    }
   }
 }
 ```
+
+**Usage in Tests:**
+
+```python
+from utilities.config_manager import ConfigManager
+
+config_manager = ConfigManager()
+test_data = config_manager.get_test_data()
+
+# Access navigation items
+nav_items = test_data["selenium"]["navigation"]
+
+# Access components
+components = test_data["selenium"]["components"]
+```
+
+**Customization:**
+You can add any test data structure needed for your application. The framework loads this data and makes it available through the `test_data` fixture in your tests.
 
 ### Configuration Management
 
 The framework's configuration is organized into three main categories:
 
 1. **Framework Settings** (`config/config.json`)
-   - Browser configuration
-   - Timeout values
-   - Reporting settings
-   - Retry configuration
+   - Browser configuration (default, headless, implicit wait)
+   - Window size settings
+   - Browser-specific arguments and preferences
 
 2. **Environment Settings** (`config/environments.json`)
    - Environment-specific URLs
@@ -337,6 +426,7 @@ The framework's configuration is organized into three main categories:
    - Test scenarios
 
 This separation provides several benefits:
+
 - Clear organization of different types of configuration
 - Easy environment switching
 - Simplified maintenance
@@ -374,6 +464,7 @@ allure serve reports/allure-results
 ```
 
 **Allure Features:**
+
 - Interactive test result dashboard
 - Test execution trends and history
 - Screenshots and error logs attached to failed tests
@@ -433,6 +524,7 @@ The framework provides comprehensive logging with automatic timestamping:
 - **Log Levels**: INFO, WARNING, ERROR with proper formatting
 
 **Log Features:**
+
 - Automatic log rotation with timestamps
 - Detailed browser configuration logging
 - Driver detection and initialization logs
@@ -470,7 +562,44 @@ Smart driver detection and management:
 
 ### Environment Management
 
-Environment configuration is managed through `config/environments.json`. The framework automatically loads the appropriate environment settings based on your configuration.
+The framework supports multiple environment configurations through `config/environments.json`. This allows you to easily switch between different environments (dev, qa, staging, prod) without changing your test code.
+
+**Example Usage:**
+
+```python
+from utilities.config_manager import ConfigManager
+
+# Get default environment config
+config_manager = ConfigManager()
+default_env = config_manager.get_env_config()
+print(default_env["url"])  # https://www.selenium.dev
+
+# Get specific environment config
+qa_env = config_manager.get_env_config("qa")
+print(qa_env["url"])  # https://www.selenium.dev
+
+# Use in your page objects
+class MyPage(BasePage):
+    def __init__(self, driver):
+        super().__init__(driver)
+        env_config = ConfigManager().get_env_config("prod")
+        self.url = env_config["url"]
+```
+
+**Configuration Structure:**
+
+The `config/environments.json` file supports:
+
+- **default**: Default environment configuration
+- **environments**: Named environment configurations (dev, qa, staging, prod)
+- Each environment can have its own URL, credentials, and other settings
+
+**Benefits:**
+
+- Easy environment switching without code changes
+- Centralized environment configuration
+- Support for environment-specific credentials and settings
+- Clear separation between test code and environment configuration
 
 ### Directory Management
 
@@ -481,8 +610,10 @@ Required directories (logs, reports, screenshots) are automatically created when
 ### Common Issues
 
 **Driver Not Found Errors:**
+
 - The framework will automatically download drivers if not found in PATH
 - If auto-download fails, manually install drivers:
+
   ```bash
   # macOS
   brew install chromedriver geckodriver
@@ -491,24 +622,29 @@ Required directories (logs, reports, screenshots) are automatically created when
   ```
 
 **Browser Not Installed:**
+
 - Ensure the browser is installed before running tests
 - Tests will fail with clear error messages if browser is missing
 
 **Import Errors:**
+
 - Verify all dependencies are installed: `pip install -r requirements.txt`
 - Check Python version: `python --version` (should be 3.8+)
 
 **Permission Issues:**
+
 - On macOS/Linux, ensure drivers have execute permissions
 - Framework automatically fixes permissions for auto-downloaded drivers
 
 **Configuration Errors:**
+
 - Verify `config/config.json` exists and is valid JSON
 - Check `config/environments.json` and `data/fixtures.json` are valid
 
 ### Getting Help
 
 If tests fail, check:
+
 1. Log files in `logs/` directory for detailed error messages
 2. Screenshots in `reports/screenshots/` for visual debugging
 3. HTML/Allure reports for test execution details
@@ -533,21 +669,25 @@ This framework provides a production-ready, maintainable foundation for Selenium
 ### Core Components
 
 **DriverFactory** (`utilities/driver_factory.py`):
+
 - Unified driver creation for all browsers
 - Smart PATH detection with webdriver-manager fallback
 - Consistent configuration handling
 
 **ConfigManager** (`utilities/config_manager.py`):
+
 - Singleton pattern for configuration loading
 - Caches all configs to avoid repeated file reads
 - Provides typed access to browser, environment, and test data configs
 
 **ScreenshotHelper** (`utilities/screenshot_helper.py`):
+
 - Centralized screenshot capture logic
 - Automatic Allure and HTML report integration
 - Support for failure and pass screenshots
 
 **BasePage** (`pages/base_page.py`):
+
 - Common page object methods with type hints
 - Explicit waits and error handling
 - Screenshot integration for debugging
@@ -557,6 +697,7 @@ This framework provides a production-ready, maintainable foundation for Selenium
 See [ROADMAP.md](ROADMAP.md) for planned features and upcoming releases.
 
 **Next Release (v0.2.0):**
+
 - Microsoft Edge browser support
 
 ## Contributing
@@ -571,15 +712,23 @@ See [ROADMAP.md](ROADMAP.md) for planned features and upcoming releases.
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Setup.py
+## Examples
 
-The `setup.py` file is used to define metadata about the package and specify dependencies required for the package to run. It is essential for packaging Python projects, managing dependencies, and facilitating the installation and distribution of Python packages.
+The framework includes example files to help you get started:
 
-### Purpose for End Users
+### Environment Configuration Example
 
-- **Easy Installation**: End users can easily install the package and its dependencies using `pip install .` after downloading the source code from GitHub.
-- **Dependency Management**: The `setup.py` file automatically handles the installation of all required dependencies. End users don't need to manually install each dependency; pip will take care of this for them.
-- **Version Control**: The `setup.py` file specifies the version of the package, allowing users to know which version they are installing. This is useful for compatibility and troubleshooting.
-- **Metadata**: It provides metadata about the package, such as the author, description, and supported Python versions. This information helps users understand what the package does and who maintains it.
-- **Development Installation**: Developers can use `pip install -e .` for editable installation during development, allowing changes to be reflected immediately.
-- **Customization**: Advanced users can customize the installation process by modifying the `setup.py` file, although this is less common for typical end users.
+See `examples/environment_usage_example.py` for a complete example demonstrating:
+
+- How to use `ConfigManager` to access environment configurations
+- Creating environment-aware page objects
+- Testing across multiple environments
+- Pytest test patterns with environment support
+
+Run the example:
+
+```bash
+python examples/environment_usage_example.py
+```
+
+This example shows practical usage patterns that you can adapt for your own test automation needs.

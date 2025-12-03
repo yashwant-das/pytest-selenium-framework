@@ -12,16 +12,6 @@
             "webdriver": "Selenium WebDriver",
             "ide": "Selenium IDE",
             "grid": "Selenium Grid"
-        },
-        "downloads": {
-            "languages": [
-                "Java",
-                "Python",
-                "JavaScript",
-                "Ruby",
-                "C#",
-                "PHP"
-            ]
         }
     }
 } 
