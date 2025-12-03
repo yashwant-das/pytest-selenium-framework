@@ -1,6 +1,6 @@
 <div align="center">
 
-  <h1>🚀 pytest-Selenium Test Automation Framework</h1>
+  <h1>Pytest Selenium Test Automation Framework</h1>
 
   <p><strong>A robust and maintainable Python test automation framework built with pytest and Selenium WebDriver</strong></p>
 
@@ -25,7 +25,7 @@
 A robust and maintainable **Python test automation framework** built with **pytest** and **Selenium WebDriver**. This framework follows the
 Page Object Model (POM) design pattern and provides a comprehensive set of utilities for web application testing.
 
-## 📑 Table of Contents
+## Table of Contents
 
 - [Features](#features)
 - [Project Structure](#project-structure)
@@ -43,9 +43,9 @@ Page Object Model (POM) design pattern and provides a comprehensive set of utili
 - [Why Selenium in 2025?](#why-selenium-in-2025)
 - [Framework Architecture](#framework-architecture)
 - [Roadmap](#roadmap)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Author](#-author)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
 
 ## Features
 
@@ -771,7 +771,7 @@ See [ROADMAP.md](ROADMAP.md) for planned features and upcoming releases.
 
 - Microsoft Edge browser support
 
-## 🤝 Contributing
+## Contributing
 
 This is a personal test automation framework project, but suggestions and improvements are welcome!
 
@@ -781,15 +781,15 @@ This is a personal test automation framework project, but suggestions and improv
 4. Push to the branch
 5. Create a Pull Request
 
-## 📄 License
+## License
 
 MIT License - feel free to use this as a template for your own test automation framework.
 
-## 👤 Author
+## Author
 
 **Yashwant Das** - Senior Specialist Quality Engineering
 
-💼 **LinkedIn:** [Yashwant Das](https://www.linkedin.com/in/yashwant-das)
+**LinkedIn:** [Yashwant Das](https://www.linkedin.com/in/yashwant-das)
 
 ---
 
